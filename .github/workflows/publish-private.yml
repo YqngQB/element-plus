@@ -1,0 +1,88 @@
+name: Publish to Private NPM Registry
+
+on:
+  push:
+    tags:
+      - 'v*'              # 匹配 v1.0.0, v2.1.3 等格式的 tag
+      - '*-creso*'       # 匹配包含 -creso 的 tag
+  workflow_dispatch:  # 支持手动触发
+    inputs:
+      version:
+        description: 'Version to publish'
+        required: true
+        default: 'patch'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get version from tag or input
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "TAG_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          else
+            echo "TAG_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
+
+      - name: Get git head
+        run: echo "GIT_HEAD=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Configure Verdaccio credentials
+        run: |
+          echo "//your-verdaccio-server:4873/:_authToken=${{ secrets.VERDACCIO_TOKEN }}" >> ~/.npmrc
+
+      - name: Build and publish
+        run: sh ./scripts/publish-private.sh
+        env:
+          TAG_VERSION: ${{ env.TAG_VERSION }}
+          GIT_HEAD: ${{ env.GIT_HEAD }}
+          VERDACCIO_REGISTRY: ${{ secrets.VERDACCIO_REGISTRY }}
+          NODE_OPTIONS: --max-old-space-size=4096
