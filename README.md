@@ -151,3 +151,29 @@ And thank you to all our backers! 🙏
 
 Element Plus is open source software licensed as
 [MIT](https://github.com/element-plus/element-plus/blob/master/LICENSE).
+
+### 安装依赖
+
+```shell
+# 安装项目依赖
+pnpm install
+# 启动 playground 开发环境
+pnpm dev
+# 启动文档开发服务器
+pnpm docs:dev
+```
+
+### 本地构建
+
+```shell
+# 完整构建流程
+pnpm clean              # 清理构建产物
+pnpm typecheck          # 类型检查
+pnpm lint               # 代码检查
+pnpm test               # 运行测试
+pnpm build              # 构建所有包
+pnpm build:theme        # 构建主题样式
+
+# 查看构建产物
+ls -la dist/
+```
