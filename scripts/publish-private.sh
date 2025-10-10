@@ -6,6 +6,8 @@ echo "🚀 Starting private npm registry publish..."
 
 # 设置私有源地址
 PRIVATE_REGISTRY="http://10.1.3.24:4873"
+# 保存当前默认源
+ORIG_REGISTRY="$(npm config get registry)"
 
 # 1. 安装依赖
 echo "📦 Installing dependencies..."
@@ -20,7 +22,7 @@ echo "🔨 Building project..."
 pnpm build
 
 # 4. 设置 npm 源为私有源
-#npm config set registry $PRIVATE_REGISTRY
+npm config set registry $PRIVATE_REGISTRY
 
 # 5. 发布主包
 echo "📤 Publishing @creso/element-plus..."
@@ -48,6 +50,6 @@ npm publish --registry $PRIVATE_REGISTRY
 cd -
 
 # 8. 恢复 npm 源设置
-#npm config set registry https://registry.npmjs.com/
+npm config set registry "$ORIG_REGISTRY"
 
 echo "✅ Private publish completed!"
