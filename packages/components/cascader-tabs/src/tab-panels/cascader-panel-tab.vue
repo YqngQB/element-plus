@@ -132,7 +132,7 @@ const isActive = computed(() => activeTab.value === props.tabKey)
 // 使用可写的 computed 实现双向绑定，类似 cascader.vue
 const checkedValue = computed<CascaderValue>({
   get() {
-    return selectedValue.value
+    return selectedValue.value ?? (props.panelProps?.multiple ? [] : '')
   },
   set(val) {
     // 获取当前选中的节点
