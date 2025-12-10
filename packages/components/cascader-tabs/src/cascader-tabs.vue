@@ -273,7 +273,7 @@ const {
   showAllLevels: props.showAllLevels,
   multiple: computed(() => !!props.props?.multiple).value,
   isDisabled: isDisabled.value,
-  initialModelValue: props.modelValue,
+  initialModelValue: () => props.modelValue, // 传递 getter 函数以保持响应式
   emitModelValue: (value) => emit(UPDATE_MODEL_EVENT, value),
   emitChange: (value) => emit('change', value),
   emitTabChange: (name) => emit('tabChange', name),

@@ -1,7 +1,12 @@
 import { inject, provide, readonly } from 'vue'
 
 import type { InjectionKey, Ref } from 'vue'
-import type { SearchHandler, SelectResult, TabPanelContext } from '../types'
+import type {
+  PanelInstance,
+  SearchHandler,
+  SelectResult,
+  TabPanelContext,
+} from '../types'
 
 /**
  * @description Cascader Tabs 上下文的注入键
@@ -38,6 +43,14 @@ export interface ProvideCascaderTabsContextOptions {
    * @description 注销 Tab 的搜索处理器
    */
   unregisterSearchHandler: (tabKey: string) => void
+  /**
+   * @description 注册 Panel 实例
+   */
+  registerPanel?: (tabKey: string, instance: PanelInstance) => void
+  /**
+   * @description 注销 Panel 实例
+   */
+  unregisterPanel?: (tabKey: string) => void
 }
 
 /**
@@ -73,6 +86,8 @@ export function provideCascaderTabsContext(
     onSelect: options.onSelect,
     registerSearchHandler: options.registerSearchHandler,
     unregisterSearchHandler: options.unregisterSearchHandler,
+    registerPanel: options.registerPanel,
+    unregisterPanel: options.unregisterPanel,
   }
 
   provide(CASCADER_TABS_CONTEXT_KEY, context)

@@ -1,7 +1,7 @@
 <template>
   <el-cascader-panel
     v-show="!filtering"
-    ref="panelRef"
+    :ref="handleRef"
     v-model="checkedValue"
     :options="options"
     :props="panelProps"
@@ -106,6 +106,19 @@ const props = withDefaults(
 const ns = useNamespace('cascader-tabs')
 const { t } = useLocale()
 
+// 初始化时还原选中状态
+let isInit = true
+const handleRef = (el: any) => {
+  panelRef.value = el
+  if (el && isInit) {
+    syncCheckedNodesToParent(
+      selectedValue.value ?? (props.panelProps?.multiple ? [] : ''),
+      true
+    )
+  }
+  isInit = false
+}
+
 const panelRef = ref<CascaderPanelInstance>()
 const suggestionPanel = ref<ScrollbarInstance>()
 const filtering = ref(false)
@@ -147,22 +160,13 @@ const checkedValue = computed<CascaderValue>({
   },
 })
 
-// 当 panel 挂载且有初始值时,同步 nodes 到父组件
+// 注册和注销搜索处理器在组件挂载/卸载时执行
 onMounted(() => {
-  // 如果有初始值且 panel 已准备好,通知父组件更新 selectedNodes
-  if (selectedValue.value && panelRef.value?.checkedNodes) {
-    const nodes = panelRef.value.checkedNodes
-    if (nodes.length > 0) {
-      // 通过 onSelect 通知父组件,这样会触发 selectedNodes 的更新
-      // 使用 silent 模式不触发 change 事件
-      onSelect({
-        value: selectedValue.value,
-        nodes: nodes as CascaderNode[],
-        tabKey: props.tabKey,
-        silent: true, // 初始化时不触发 change 事件
-      })
-    }
-  }
+  registerSearchHandler(props.tabKey, handleSearch)
+})
+
+onBeforeUnmount(() => {
+  unregisterSearchHandler(props.tabKey)
 })
 
 /**
@@ -236,16 +240,6 @@ const clearCheckedNodes = () => {
   panelRef.value?.clearCheckedNodes()
 }
 
-// 注册搜索处理器
-onMounted(() => {
-  registerSearchHandler(props.tabKey, handleSearch)
-})
-
-// 注销搜索处理器
-onBeforeUnmount(() => {
-  unregisterSearchHandler(props.tabKey)
-})
-
 // 监听 keyword 变化,当此 tab 激活时处理搜索
 watch(
   () => [keyword.value, isActive.value],
@@ -255,6 +249,63 @@ watch(
     }
   },
   { immediate: true }
+)
+
+// 防抖标志位，避免循环触发
+let isUpdatingNodes = false
+
+const syncCheckedNodesToParent = (
+  value: CascaderValue,
+  silent = true
+): void => {
+  if (!panelRef.value) return
+
+  const nodes = panelRef.value.checkedNodes || []
+
+  // 关键修复：只有当找到了节点时才同步
+  // 如果 value 有值但 nodes 为空，说明这个 tab 的数据结构不匹配，不应该覆盖其他 tab 的结果
+  // 例外：如果 value 本身为空，则应该同步（清空操作）
+  const hasValue = value && (Array.isArray(value) ? value.length > 0 : true)
+  if (hasValue && nodes.length === 0) {
+    // 有值但找不到节点，说明不是这个 tab 的数据，跳过
+    return
+  }
+
+  onSelect({
+    value: value ?? (props.panelProps?.multiple ? [] : ''),
+    nodes: nodes as CascaderNode[],
+    tabKey: props.tabKey,
+    silent,
+  })
+}
+
+// 监听 selectedValue 变化,同步 nodes 到父组件
+// 关键修复：
+// 1. 移除 isActive 限制 - 所有 tab 都应该同步，否则第一次加载非激活 tab 的数据会丢失
+// 2. 使用 immediate: true - 确保组件初始化时就同步
+// 3. 使用 nextTick - 等待 Panel 内部的 watch 执行完成
+// 4. 添加防抖机制 - 避免重复触发和循环调用
+watch(
+  () => checkedValue.value,
+  (newValue, oldValue) => {
+    // 防止循环触发
+    if (isUpdatingNodes) return
+
+    // 值未变化则跳过
+    if (JSON.stringify(newValue) === JSON.stringify(oldValue)) return
+
+    if (!panelRef.value) return
+
+    isUpdatingNodes = true
+    // nextTick(() => {
+    syncCheckedNodesToParent(
+      newValue ?? (props.panelProps?.multiple ? [] : ''),
+      true
+    )
+    isUpdatingNodes = false
+    // })
+  },
+  { deep: true, flush: 'post', immediate: true }
 )
 
 defineExpose({

@@ -75,6 +75,16 @@ export interface SelectResult {
 }
 
 /**
+ * @description Panel 实例接口
+ */
+export interface PanelInstance {
+  /**
+   * @description CascaderPanel 的 ref
+   */
+  panelRef?: any
+}
+
+/**
  * @description 提供给子 Tab 面板的上下文
  */
 export interface TabPanelContext {
@@ -102,6 +112,14 @@ export interface TabPanelContext {
    * @description 注销当前 Tab 的搜索处理器
    */
   unregisterSearchHandler: (tabKey: string) => void
+  /**
+   * @description 注册 Panel 实例
+   */
+  registerPanel?: (tabKey: string, instance: PanelInstance) => void
+  /**
+   * @description 注销 Panel 实例
+   */
+  unregisterPanel?: (tabKey: string) => void
 }
 
 /**

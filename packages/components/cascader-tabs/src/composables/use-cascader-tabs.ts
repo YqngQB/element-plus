@@ -76,9 +76,9 @@ export interface UseCascaderTabsOptions {
    */
   emitRemoveTag?: (value: CascaderValue) => void
   /**
-   * @description 初始 model 值
+   * @description 获取当前 model 值的函数（保持响应式）
    */
-  initialModelValue?: CascaderValue
+  initialModelValue?: () => CascaderValue | undefined
 }
 
 /**
@@ -157,8 +157,17 @@ export function useCascaderTabs(options: UseCascaderTabsOptions) {
 
   /**
    * @description Selected value
+   * 使用 computed 属性实现响应式同步，参考 Cascader 的 checkedValue 实现
    */
-  const selectedValue = ref<CascaderValue | undefined>(initialModelValue)
+  const selectedValue = computed<CascaderValue | undefined>({
+    get() {
+      return initialModelValue ? initialModelValue() : undefined
+    },
+    set(val) {
+      if (emitModelValue) emitModelValue(val as CascaderValue)
+      if (emitChange) emitChange(val as CascaderValue)
+    },
+  })
 
   /**
    * @description Selected nodes
@@ -379,14 +388,17 @@ export function useCascaderTabs(options: UseCascaderTabsOptions) {
       actualNodes = createTempNodesFromLabels(value, labels)
     }
 
-    // Update selected state
-    selectedValue.value = value
+    // Update selected nodes
     selectedNodes.value = actualNodes
 
-    // Emit events (unless silent mode)
+    // Emit events
+    // silent 模式：只更新 v-model，不触发 change 事件
+    // 非 silent 模式：同时更新 v-model 和触发 change 事件
     if (!silent) {
       emitModelValue?.(value)
       emitChange?.(value)
+    } else {
+      emitModelValue?.(value)
     }
 
     // Close popper if not in multiple mode
@@ -462,19 +474,22 @@ export function useCascaderTabs(options: UseCascaderTabsOptions) {
    */
   const deleteTag = (tag: Tag): void => {
     const node = tag.node as CascaderNode
+
+    // 调用 Panel 的方法取消选中
     node.doCheck(false)
 
-    // Update selectedNodes and selectedValue
+    // 计算新值
     const newNodes = selectedNodes.value.filter((n) => n.uid !== node.uid)
-    selectedNodes.value = newNodes
-
-    // Calculate new value
     const newValue = newNodes.map((n) => n.valueByOption)
-    selectedValue.value = newValue as CascaderValue
 
-    // Emit events
-    emitModelValue?.(newValue as CascaderValue)
-    emitChange?.(newValue as CascaderValue)
+    // 通过 handleSelect 统一处理，触发正常的 change 事件
+    handleSelect({
+      value: newValue as CascaderValue,
+      nodes: newNodes,
+      silent: false, // 非静默模式，触发 change 事件
+    })
+
+    // 触发 removeTag 事件
     emitRemoveTag?.(node.valueByOption)
   }
 
