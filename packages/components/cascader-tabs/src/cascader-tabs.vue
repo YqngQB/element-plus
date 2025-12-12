@@ -66,7 +66,6 @@
 
         <div
           v-if="multiple"
-          ref="tagWrapper"
           :class="[ns.e('tags'), ns.is('validate', Boolean(validateState))]"
         >
           <slot name="tag" :data="tags" :delete-tag="deleteTag">
@@ -241,7 +240,6 @@ const { isComposing, handleComposition } = useComposition({
 const tooltipRef = ref<TooltipInstance>()
 const tagTooltipRef = ref<TooltipInstance>()
 const inputRef = ref<InputInstance>()
-const tagWrapper = ref<HTMLDivElement>()
 const inputHover = ref(false)
 
 // 使用核心 Composable
@@ -452,9 +450,49 @@ defineExpose({
    */
   contentRef,
   /**
-   * @description selected content text
+   * @description selected content text (single mode)
    */
   presentText,
+  /**
+   * @description selected tags for multiple mode
+   */
+  tags,
+  /**
+   * @description popper visibility state
+   */
+  popperVisible,
+  /**
+   * @description current active tab
+   */
+  activeTab,
+  /**
+   * @description current search keyword
+   */
+  keyword: searchInputValue,
+  /**
+   * @description display value (computed)
+   */
+  displayValue,
+  /**
+   * @description whether in filtering state
+   */
+  isFiltering,
+  /**
+   * @description input value
+   */
+  inputValue,
+  /**
+   * @description handle select nodes
+   */
+  handleSelect,
+  /**
+   * @description handle clear
+   */
+  handleClear: coreClear,
+  /**
+   * @description delete tag
+   */
+  deleteTag: coreDeleteTag,
   /**
    * @description register search handler for custom tabs
    */
@@ -463,9 +501,5 @@ defineExpose({
    * @description unregister search handler for custom tabs
    */
   unregisterSearchHandler,
-  /**
-   * @description handle select nodes
-   */
-  handleSelect,
 })
 </script>
