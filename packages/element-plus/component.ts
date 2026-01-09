@@ -14,6 +14,10 @@ import { ElCard } from '@element-plus/components/card'
 import { ElCarousel, ElCarouselItem } from '@element-plus/components/carousel'
 import { ElCascader } from '@element-plus/components/cascader'
 import { ElCascaderPanel } from '@element-plus/components/cascader-panel'
+import {
+  ElCascaderPanelTab,
+  ElCascaderTabs,
+} from '@element-plus/components/cascader-tabs'
 import { ElCheckTag } from '@element-plus/components/check-tag'
 import {
   ElCheckbox,
@@ -131,6 +135,8 @@ export default [
   ElCarouselItem,
   ElCascader,
   ElCascaderPanel,
+  ElCascaderTabs,
+  ElCascaderPanelTab,
   ElCheckTag,
   ElCheckbox,
   ElCheckboxButton,
