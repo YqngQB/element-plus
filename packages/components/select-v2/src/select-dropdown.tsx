@@ -1,6 +1,7 @@
 import {
   computed,
   defineComponent,
+  h,
   inject,
   ref,
   toRaw,
@@ -15,10 +16,12 @@ import {
 } from '@element-plus/components/virtual-list'
 import { useNamespace } from '@element-plus/hooks'
 import { EVENT_CODE } from '@element-plus/constants'
+import ElTag from '@element-plus/components/tag'
+import ElScrollbar from '@element-plus/components/scrollbar'
 import GroupItem from './group-item.vue'
 import OptionItem from './option-item.vue'
 import { useProps } from './useProps'
-import { selectV2InjectionKey } from './token'
+import { selectV2InjectionKey, selectV2SlotKey } from './token'
 
 import type {
   DynamicSizeListInstance,
@@ -62,6 +65,7 @@ export default defineComponent({
   props,
   setup(props, { slots, expose }) {
     const select = inject(selectV2InjectionKey)!
+    const selectSlot = inject(selectV2SlotKey)
     const ns = useNamespace('select')
     const { getLabel, getValue, getDisabled } = useProps(select.props)
 
@@ -253,13 +257,79 @@ export default defineComponent({
 
     return () => {
       const { data, width } = props
-      const { height, multiple, scrollbarAlwaysOn } = select.props
+      const { height, multiple, scrollbarAlwaysOn, filterable } = select.props
       const isScrollbarAlwaysOn = computed(() => {
         // fix https://github.com/element-plus/element-plus/issues/19127
         return isIOS ? true : scrollbarAlwaysOn
       })
 
       const List = unref(isSized) ? FixedSizeList : DynamicSizeList
+
+      // 渲染单个 tag 项
+      const renderTagItem = (item: Option) => (
+        <div
+          key={select.getValueKey?.(select.getValue?.(item))}
+          class={ns.e('selected-item')}
+        >
+          <ElTag
+            closable={
+              !select.selectDisabled.value && !select.getDisabled?.(item)
+            }
+            size={select.collapseTagSize.value}
+            type={select.props.tagType}
+            effect={select.props.tagEffect}
+            disable-transitions
+            style={select.tagStyle.value}
+            onClose={(e: MouseEvent) => select.deleteTag?.(e, item)}
+          >
+            <span class={ns.e('tags-text')}>
+              {selectSlot?.label
+                ? h(selectSlot.label, {
+                    label: select.getLabel?.(item),
+                    value: select.getValue?.(item),
+                  })
+                : select.getLabel?.(item)}
+            </span>
+          </ElTag>
+        </div>
+      )
+
+      // Tags 显示区域
+      const renderTags = () => {
+        if (
+          !multiple ||
+          !filterable ||
+          !select.expanded.value ||
+          !select.cachedOptions?.value?.length
+        ) {
+          return null
+        }
+
+        return (
+          <ElScrollbar
+            tag="div"
+            wrap-class={ns.be('dropdown', 'tags')}
+            style={{ width: `${width}px` }}
+          >
+            <div class={ns.e('selection')} style={{ width: `${width}px` }}>
+              {selectSlot?.tag
+                ? h(
+                    selectSlot?.tag,
+                    {
+                      data: select.cachedOptions!.value,
+                      deleteTag: select.deleteTag,
+                      selectDisabled: select.selectDisabled.value,
+                    },
+                    {
+                      default: () =>
+                        select.cachedOptions!.value.map(renderTagItem),
+                    }
+                  )
+                : select.cachedOptions!.value.map(renderTagItem)}
+            </div>
+          </ElScrollbar>
+        )
+      }
 
       return (
         <div
@@ -268,6 +338,7 @@ export default defineComponent({
             width: `${width}px`,
           }}
         >
+          {renderTags()}
           {slots.header?.()}
           {slots.loading?.() || slots.empty?.() || (
             <List

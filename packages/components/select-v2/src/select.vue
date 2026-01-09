@@ -58,7 +58,7 @@
             ]"
           >
             <slot
-              v-if="multiple"
+              v-if="multiple && !(filterable && dropdownMenuVisible)"
               name="tag"
               :data="states.cachedOptions"
               :delete-tag="deleteTag"
@@ -301,7 +301,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide, reactive, toRefs } from 'vue'
+import {
+  computed,
+  defineComponent,
+  provide,
+  reactive,
+  toRef,
+  toRefs,
+} from 'vue'
 import { isArray } from '@element-plus/utils'
 import { ClickOutside } from '@element-plus/directives'
 import ElTooltip from '@element-plus/components/tooltip'
@@ -311,7 +318,7 @@ import { useCalcInputWidth, useId } from '@element-plus/hooks'
 import ElSelectMenu from './select-dropdown'
 import useSelect from './useSelect'
 import { selectV2Emits, selectV2Props } from './defaults'
-import { selectV2InjectionKey } from './token'
+import { selectV2InjectionKey, selectV2SlotKey } from './token'
 import { BORDER_HORIZONTAL_WIDTH } from '@element-plus/constants'
 
 export default defineComponent({
@@ -325,7 +332,7 @@ export default defineComponent({
   directives: { ClickOutside },
   props: selectV2Props,
   emits: selectV2Emits,
-  setup(props, { emit }) {
+  setup(props, { emit, slots }) {
     const modelValue = computed(() => {
       const { modelValue: rawModelValue, multiple } = props
       const fallback = multiple ? [] : undefined
@@ -360,6 +367,22 @@ export default defineComponent({
       onHover: API.onHover,
       onKeyboardNavigate: API.onKeyboardNavigate,
       onKeyboardSelect: API.onKeyboardSelect,
+      //___________
+      cachedOptions: toRef(API.states, 'cachedOptions'),
+      deleteTag: API.deleteTag,
+      getLabel: API.getLabel,
+      getValue: API.getValue,
+      getDisabled: API.getDisabled,
+      getValueKey: API.getValueKey,
+      tagStyle: API.tagStyle,
+      collapseTagSize: API.collapseTagSize,
+      selectDisabled: API.selectDisabled,
+    })
+
+    // 单独 provide 插槽
+    provide(selectV2SlotKey, {
+      label: slots.label,
+      tag: slots.tag,
     })
 
     const selectedLabel = computed(() => {
