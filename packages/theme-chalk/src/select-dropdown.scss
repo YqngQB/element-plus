@@ -46,6 +46,36 @@
   }
 }
 
+@include b(select-dropdown__tags) {
+  padding: 8px 8px 4px;
+  border-bottom: map.get($select-dropdown, 'border');
+  width: 100%;
+  max-height: calc(24px * 3 + 4px * 2);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  .#{$namespace}-select__selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .#{$namespace}-select__selected-item {
+    display: inline-flex;
+    max-width: 100%;
+  }
+
+  .#{$namespace}-tag {
+    max-width: 100%;
+
+    .#{$namespace}-select__tags-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
 @include b(select-dropdown__header) {
   padding: map.get($select-dropdown, 'header-padding');
   border-bottom: map.get($select-dropdown, 'border');

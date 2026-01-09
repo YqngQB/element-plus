@@ -21,6 +21,10 @@ export interface SelectContext {
   onOptionCreate(vm: OptionPublicInstance): void
   onOptionDestroy(key: OptionValue, vm: OptionPublicInstance): void
   handleOptionSelect(vm: OptionPublicInstance): void
+  deleteTag: (event: MouseEvent, tag: OptionBasic) => void
+  tagStyle: { maxWidth: string }
+  getValueKey: (item: OptionPublicInstance | OptionBasic) => any
+  collapseTagSize: 'small' | 'default'
 }
 export type SelectStates = {
   inputValue: string

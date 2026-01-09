@@ -874,7 +874,7 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
   }
 
   // computed style
-  const tagStyle = computed(() => {
+  const tagStyle = computed<{ maxWidth: string }>(() => {
     const gapWidth = getGapWidth()
     const inputSlotWidth = props.filterable ? gapWidth + MINIMUM_INPUT_WIDTH : 0
     const maxWidth =

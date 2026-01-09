@@ -58,7 +58,7 @@
             ]"
           >
             <slot
-              v-if="multiple"
+              v-if="multiple && !(filterable && dropdownMenuVisible)"
               name="tag"
               :data="states.selected"
               :delete-tag="deleteTag"
@@ -345,7 +345,7 @@ import { useProps } from '@element-plus/components/select-v2/src/useProps'
 import ElOption from './option.vue'
 import ElSelectMenu from './select-dropdown.vue'
 import { useSelect } from './useSelect'
-import { selectKey } from './token'
+import { selectKey, selectSlotKey } from './token'
 import ElOptions from './options'
 import { selectProps } from './select'
 import ElOptionGroup from './option-group.vue'
@@ -532,8 +532,19 @@ export default defineComponent({
         handleOptionSelect: API.handleOptionSelect,
         onOptionCreate: API.onOptionCreate,
         onOptionDestroy: API.onOptionDestroy,
+        // __________
+        deleteTag: API.deleteTag,
+        tagStyle: API.tagStyle,
+        getValueKey: API.getValueKey,
+        collapseTagSize: API.collapseTagSize,
       }) satisfies SelectContext
     )
+
+    // 单独 provide label 插槽
+    provide(selectSlotKey, {
+      tag: slots.tag,
+      label: slots.label,
+    })
 
     const selectedLabel = computed(() => {
       if (!props.multiple) {
