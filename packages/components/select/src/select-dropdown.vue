@@ -9,14 +9,14 @@
       :wrap-class="ns.be('dropdown', 'tags')"
     >
       <div :class="ns.e('selection')" :style="{ width: minWidth }">
-        <component :is="renderTag">
+        <component :is="renderTag" v-bind="renderTagBindData">
           <div
             v-for="item in select.states.selected"
             :key="select.getValueKey(item)"
             :class="ns.e('selected-item')"
           >
             <el-tag
-              :closable="!selectDisabled && !item.isDisabled"
+              :closable="!select.selectDisabled && !item.isDisabled"
               :size="select.collapseTagSize"
               :type="select.props.tagType"
               :effect="select.props.tagEffect"
@@ -80,7 +80,6 @@ export default defineComponent({
     const isFitInputWidth = computed(() => select.props.fitInputWidth)
     const isFilterable = computed(() => select.props.filterable)
     const minWidth = ref('')
-    const selectDisabled = computed(() => select.props.disabled)
 
     // 默认 tag 插槽实现：直接渲染子节点
     const DefaultTag = (props: any, { slots }: any) => {
@@ -89,6 +88,13 @@ export default defineComponent({
     const renderTag = computed(() => {
       return selectSlot?.tag ?? DefaultTag
     })
+    const renderTagBindData = selectSlot?.tag
+      ? {
+          data: select.states.selected,
+          deleteTag: select.deleteTag,
+          selectDisabled: select.selectDisabled,
+        }
+      : {}
 
     function updateMinWidth() {
       const offsetWidth = select.selectRef?.offsetWidth
@@ -113,7 +119,7 @@ export default defineComponent({
       isMultiple,
       isFitInputWidth,
       isFilterable,
-      selectDisabled,
+      renderTagBindData,
       select,
       renderTag,
       selectSlot,

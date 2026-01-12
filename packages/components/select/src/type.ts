@@ -23,6 +23,7 @@ export interface SelectContext {
   handleOptionSelect(vm: OptionPublicInstance): void
   deleteTag: (event: MouseEvent, tag: OptionBasic) => void
   tagStyle: { maxWidth: string }
+  selectDisabled: boolean
   getValueKey: (item: OptionPublicInstance | OptionBasic) => any
   collapseTagSize: 'small' | 'default'
 }

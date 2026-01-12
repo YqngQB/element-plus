@@ -534,6 +534,7 @@ export default defineComponent({
         onOptionDestroy: API.onOptionDestroy,
         // __________
         deleteTag: API.deleteTag,
+        selectDisabled: API.selectDisabled,
         tagStyle: API.tagStyle,
         getValueKey: API.getValueKey,
         collapseTagSize: API.collapseTagSize,

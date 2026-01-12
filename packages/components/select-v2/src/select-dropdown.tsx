@@ -311,7 +311,10 @@ export default defineComponent({
             wrap-class={ns.be('dropdown', 'tags')}
             style={{ width: `${width}px` }}
           >
-            <div class={ns.e('selection')} style={{ width: `${width}px` }}>
+            <div
+              class={ns.e('selection')}
+              style={{ width: `${width! - 16}px` }}
+            >
               {selectSlot?.tag
                 ? h(
                     selectSlot?.tag,
