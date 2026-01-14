@@ -1,0 +1,154 @@
+@use 'mixins/mixins' as *;
+@use 'common/var' as *;
+
+@include b(permission-table) {
+  width: 100%;
+  font-size: 14px;
+  color: getCssVar('text-color', 'regular');
+
+  @include e(table) {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  @include e(row) {
+    &:hover {
+      background-color: getCssVar('fill-color', 'light');
+    }
+
+    @include m(level1) {
+      background-color: getCssVar('fill-color', 'lighter');
+
+      &:hover {
+        background-color: getCssVar('fill-color');
+      }
+    }
+  }
+
+  @include e(cell) {
+    padding: 8px 12px;
+    border: 1px solid getCssVar('border-color', 'lighter');
+    vertical-align: middle;
+
+    @include m(level1) {
+      padding: 0;
+      background-color: inherit;
+    }
+
+    @include m(level2) {
+      background-color: getCssVar('bg-color');
+    }
+
+    @include m(level3) {
+      background-color: getCssVar('bg-color');
+    }
+
+    @include m(level4) {
+      background-color: getCssVar('bg-color');
+    }
+
+    @include m(permissions) {
+      background-color: getCssVar('bg-color');
+    }
+  }
+
+  @include e(level1-content) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: getCssVar('color', 'primary');
+    }
+  }
+
+  @include e(expand-icon) {
+    transition: transform 0.3s;
+    font-size: 12px;
+
+    &.is-expanded {
+      transform: rotate(90deg);
+    }
+  }
+
+  @include e(cell-content) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  @include e(label) {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @include e(permissions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  @include e(permission-item) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  @include e(permission-label) {
+    font-size: 13px;
+    color: getCssVar('text-color', 'regular');
+  }
+}
+
+// 权限复选框组件样式
+.el-permission-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.el-permission-checkbox__inherit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.el-permission-checkbox__inherit:hover:not(.is-readonly) {
+  transform: scale(1.1);
+}
+
+.el-permission-checkbox__inherit.is-readonly {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.el-permission-checkbox__inherit.is-granted {
+  color: var(--el-color-success);
+}
+
+.el-permission-checkbox__inherit.is-denied {
+  color: var(--el-color-danger);
+}
+
+.el-permission-checkbox__inherit.is-none {
+  color: var(--el-text-color-placeholder);
+}
+
+.el-permission-checkbox__granted {
+  margin: 0 !important;
+  height: auto !important;
+}
+
+.el-permission-checkbox__granted .el-checkbox__label {
+  display: none;
+}
