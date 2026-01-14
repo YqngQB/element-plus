@@ -112,6 +112,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .el-permission-checkbox__inherit {
@@ -121,27 +122,30 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
 
-.el-permission-checkbox__inherit:hover:not(.is-readonly) {
+.el-permission-checkbox__inherit:hover:not(.is-readonly):not(.is-disabled) {
   transform: scale(1.1);
 }
 
-.el-permission-checkbox__inherit.is-readonly {
+.el-permission-checkbox__inherit.is-readonly,
+.el-permission-checkbox__inherit.is-disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .el-permission-checkbox__inherit.is-granted {
-  color: var(--el-color-success);
+  color: getCssVar('color', 'success');
 }
 
 .el-permission-checkbox__inherit.is-denied {
-  color: var(--el-color-danger);
+  color: getCssVar('color', 'danger');
 }
 
 .el-permission-checkbox__inherit.is-none {
-  color: var(--el-text-color-placeholder);
+  color: getCssVar('text-color', 'placeholder');
 }
 
 .el-permission-checkbox__granted {
