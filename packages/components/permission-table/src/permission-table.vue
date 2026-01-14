@@ -476,9 +476,21 @@ const collapseAll = () => {
   expandedLevel1.value = new Set()
 }
 
+/**
+ * 重置组件状态
+ * 恢复到初始状态：所有一级菜单收起，减少渲染节点
+ */
+const reset = () => {
+  // 清空展开状态
+  expandedLevel1.value = new Set()
+  // 清空已渲染状态，下次展开才渲染
+  renderedLevel1.value = new Set()
+}
+
 defineExpose({
   expandAll,
   collapseAll,
+  reset,
   getGrantedKeys: cascade.getGrantedKeys,
   getInheritedKeys: cascade.getInheritedKeys,
   exportStates: cascade.exportStates,
