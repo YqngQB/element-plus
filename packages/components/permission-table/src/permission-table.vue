@@ -31,6 +31,7 @@
                   :indeterminate="level1.state.indeterminate"
                   :show-inherit="showInherit"
                   :disabled="disabled"
+                  :readonly="readonly"
                   :role-inherit-state="getRoleInheritState(level1.id)"
                   @inherit-change="handleInheritChange(level1.id, $event)"
                   @granted-change="handleGrantedChange(level1.id, $event)"
@@ -64,6 +65,7 @@
                     :indeterminate="row.level2State.indeterminate"
                     :show-inherit="showInherit"
                     :disabled="disabled"
+                    :readonly="readonly"
                     :role-inherit-state="getRoleInheritState(row.level2Id)"
                     @inherit-change="handleInheritChange(row.level2Id, $event)"
                     @granted-change="handleGrantedChange(row.level2Id, $event)"
@@ -88,6 +90,7 @@
                     :indeterminate="row.level3State.indeterminate"
                     :show-inherit="showInherit"
                     :disabled="disabled"
+                    :readonly="readonly"
                     :role-inherit-state="getRoleInheritState(row.level3Id)"
                     @inherit-change="handleInheritChange(row.level3Id, $event)"
                     @granted-change="handleGrantedChange(row.level3Id, $event)"
@@ -111,6 +114,7 @@
                     :indeterminate="row.level4State?.indeterminate"
                     :show-inherit="showInherit"
                     :disabled="disabled"
+                    :readonly="readonly"
                     :role-inherit-state="getRoleInheritState(row.level4Id)"
                     @inherit-change="handleInheritChange(row.level4Id, $event)"
                     @granted-change="handleGrantedChange(row.level4Id, $event)"
@@ -138,6 +142,7 @@
                       :indeterminate="perm.state.indeterminate"
                       :show-inherit="showInherit"
                       :disabled="disabled"
+                      :readonly="readonly"
                       :role-inherit-state="getRoleInheritState(perm.id)"
                       @inherit-change="handleInheritChange(perm.id, $event)"
                       @granted-change="handleGrantedChange(perm.id, $event)"
@@ -213,6 +218,7 @@ const props = withDefaults(
     defaultExpandAll?: boolean
     showInherit?: boolean
     disabled?: boolean
+    readonly?: boolean
   }>(),
   {
     data: () => [],
@@ -222,11 +228,12 @@ const props = withDefaults(
     defaultExpandAll: false,
     showInherit: true,
     disabled: false,
+    readonly: false,
   }
 )
 
 // 解构常用 props 供模板使用
-const { showInherit, disabled } = toRefs(props)
+const { showInherit, disabled, readonly } = toRefs(props)
 
 const emit = defineEmits<{
   'permission-change': [
@@ -467,11 +474,15 @@ const emitStates = (changedId: string) => {
   emit('update:grantedState', grantedState)
 }
 
-// 导出方法
+/**
+ * 导出组件方法
+ */
+
+// 展开所有一级菜单
 const expandAll = () => {
   expandedLevel1.value = new Set(props.data.map((item) => item.id))
 }
-
+// 收起所有一级菜单
 const collapseAll = () => {
   expandedLevel1.value = new Set()
 }

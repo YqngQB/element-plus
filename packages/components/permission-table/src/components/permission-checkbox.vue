@@ -1,5 +1,11 @@
 <template>
-  <span class="el-permission-checkbox" @click.stop>
+  <span
+    class="el-permission-checkbox"
+    :class="{
+      'is-readonly': props.readonly,
+    }"
+    @click.stop
+  >
     <!-- 继承状态（圆形） -->
     <span
       v-if="showInherit"
@@ -85,7 +91,7 @@ const props = withDefaults(
     readonly: false,
     showInherit: true,
     disabled: false,
-    roleInheritState: InheritState.GRANTED,
+    roleInheritState: InheritState.DENIED,
   }
 )
 

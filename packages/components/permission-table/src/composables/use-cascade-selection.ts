@@ -9,12 +9,18 @@ import type { InheritState, PermissionNode } from '../types'
 export interface NodeInfo {
   id: string
   node: PermissionNode
+  // 父节点ID
   parentId: string | null
+  // 直接子节点ID
   childIds: string[]
-  descendantIds: string[] // 所有后代ID（包括叶子权限）
-  ancestorIds: string[] // 所有祖先ID
+  // 所有后代ID（包括叶子权限）
+  descendantIds: string[]
+  // 所有祖先ID
+  ancestorIds: string[]
+  // 节点层级（level）：数值越大表示层级越深。1 = 一级目录（根级），2 = 二级目录，3 = 页面，4 = Tab 页，5 = 功能权限点（权限项）
   level: number
-  permissionIds: string[] // 该节点自身的权限ID
+  // 该节点自身的权限ID
+  permissionIds: string[]
 }
 
 /**

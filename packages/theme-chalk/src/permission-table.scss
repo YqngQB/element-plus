@@ -130,7 +130,12 @@
   transform: scale(1.1);
 }
 
-.el-permission-checkbox__inherit.is-readonly,
+.el-permission-checkbox.is-readonly {
+  .el-checkbox__inner {
+    --el-checkbox-disabled-checked-input-fill: #fff;
+    --el-checkbox-disabled-input-fill: #fff;
+  }
+}
 .el-permission-checkbox__inherit.is-disabled {
   cursor: not-allowed;
   opacity: 0.6;
