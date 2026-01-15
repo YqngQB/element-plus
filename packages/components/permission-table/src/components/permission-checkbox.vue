@@ -15,38 +15,45 @@
       @click.stop="handleInheritClick"
     >
       <!-- 继承有权限：绿色圆形勾 -->
-      <svg
-        v-if="inherit === InheritState.GRANTED"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-        <path
-          d="M8 12l3 3 5-6"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <slot v-if="inherit === InheritState.GRANTED" name="inherit-granted-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M8 12l3 3 5-6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </slot>
       <!-- 继承无权限：红色圆形叉 -->
-      <svg
+      <slot
         v-else-if="inherit === InheritState.DENIED"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
+        name="inherit-denied-icon"
       >
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-        <path
-          d="M9 9l6 6M15 9l-6 6"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M9 9l6 6M15 9l-6 6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </slot>
       <!-- 不继承：空圆形 -->
       <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />

@@ -12,23 +12,25 @@
       "
     >
       <el-select
-        v-model="localValue"
+        v-model="selectValue"
         :multiple="multiple"
         :disabled="disabled"
         :placeholder="placeholder"
-        :options="options"
+        :persistent="false"
         filterable
         collapse-tags
         collapse-tags-tooltip
         size="small"
         class="el-constraint-config__select"
-        @change="handleChange"
+        @change="
+          (value) => (multiple ? handleMultiChange(value) : handleChange(value))
+        "
       >
         <el-option
-          v-for="option in options"
-          :key="option.value"
-          :label="option.label"
-          :value="option.value"
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
         />
       </el-select>
     </template>
@@ -49,8 +51,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
-import { ElOption, ElSelect } from '@element-plus/components/select'
+import { computed, ref, watch } from 'vue'
+import ElSelect from '@element-plus/components/select'
 import { ConstraintType } from '../types'
 
 import type { OptionItem } from '../types'
@@ -58,6 +60,8 @@ import type { OptionItem } from '../types'
 defineOptions({
   name: 'ElConstraintConfig',
 })
+
+const { Option: ElOption } = ElSelect
 
 const props = withDefaults(
   defineProps<{
@@ -99,6 +103,18 @@ const localValue = ref<string | number | undefined>()
 // 多选值
 const localMultiValue = ref<(string | number)[]>([])
 
+// v-model 绑定的计算属性
+const selectValue = computed({
+  get: () => (props.multiple ? localMultiValue.value : localValue.value),
+  set: (val) => {
+    if (props.multiple) {
+      localMultiValue.value = val as (string | number)[]
+    } else {
+      localValue.value = val as string | number | undefined
+    }
+  },
+})
+
 // 初始化本地值
 watch(
   () => props.modelValue,
@@ -117,12 +133,19 @@ watch(
 )
 
 // 处理单选变更
-const handleChange = (val: (string | number | boolean)[]) => {
-  // 实际业务中后端不接受布尔值，需过滤掉
+const handleChange = (val: string | number | boolean | undefined) => {
+  // 过滤掉 boolean 类型（来自 RadioGroup change 事件）
+  const normalizedVal =
+    typeof val === 'boolean' ? undefined : (val as string | number | undefined)
+  emit('change', normalizedVal)
+}
+
+// 处理多选变更
+const handleMultiChange = (val: (string | number | boolean)[]) => {
+  // 过滤掉 boolean 类型（来自 CheckboxGroup change 事件）
   const normalizedVal = val.filter(
     (v): v is string | number => typeof v !== 'boolean'
   )
-  emit('update:modelValue', normalizedVal)
   emit('change', normalizedVal)
 }
 </script>

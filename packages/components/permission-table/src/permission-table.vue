@@ -35,7 +35,14 @@
                   :role-inherit-state="getRoleInheritState(level1.id)"
                   @inherit-change="handleInheritChange(level1.id, $event)"
                   @granted-change="handleGrantedChange(level1.id, $event)"
-                />
+                >
+                  <template #inherit-granted-icon>
+                    <slot name="inherit-granted-icon" />
+                  </template>
+                  <template #inherit-denied-icon>
+                    <slot name="inherit-denied-icon" />
+                  </template>
+                </permission-checkbox>
                 <span class="el-permission-table__label">
                   {{ level1.label }}
                 </span>
@@ -69,7 +76,14 @@
                     :role-inherit-state="getRoleInheritState(row.level2Id)"
                     @inherit-change="handleInheritChange(row.level2Id, $event)"
                     @granted-change="handleGrantedChange(row.level2Id, $event)"
-                  />
+                  >
+                    <template #inherit-granted-icon>
+                      <slot name="inherit-granted-icon" />
+                    </template>
+                    <template #inherit-denied-icon>
+                      <slot name="inherit-denied-icon" />
+                    </template>
+                  </permission-checkbox>
                   <span class="el-permission-table__label">
                     {{ row.level2Label }}
                   </span>
@@ -94,7 +108,14 @@
                     :role-inherit-state="getRoleInheritState(row.level3Id)"
                     @inherit-change="handleInheritChange(row.level3Id, $event)"
                     @granted-change="handleGrantedChange(row.level3Id, $event)"
-                  />
+                  >
+                    <template #inherit-granted-icon>
+                      <slot name="inherit-granted-icon" />
+                    </template>
+                    <template #inherit-denied-icon>
+                      <slot name="inherit-denied-icon" />
+                    </template>
+                  </permission-checkbox>
                   <span class="el-permission-table__label">
                     {{ row.level3Label }}
                   </span>
@@ -118,7 +139,14 @@
                     :role-inherit-state="getRoleInheritState(row.level4Id)"
                     @inherit-change="handleInheritChange(row.level4Id, $event)"
                     @granted-change="handleGrantedChange(row.level4Id, $event)"
-                  />
+                  >
+                    <template #inherit-granted-icon>
+                      <slot name="inherit-granted-icon" />
+                    </template>
+                    <template #inherit-denied-icon>
+                      <slot name="inherit-denied-icon" />
+                    </template>
+                  </permission-checkbox>
                   <span class="el-permission-table__label">
                     {{ row.level4Label }}
                   </span>
@@ -135,6 +163,7 @@
                     v-for="perm in row.permissions"
                     :key="perm.id"
                     class="el-permission-table__permission-item"
+                    :class="[perm.constraintType, perm.type]"
                   >
                     <permission-checkbox
                       :inherit="perm.state.inherit"
@@ -146,10 +175,31 @@
                       :role-inherit-state="getRoleInheritState(perm.id)"
                       @inherit-change="handleInheritChange(perm.id, $event)"
                       @granted-change="handleGrantedChange(perm.id, $event)"
+                    >
+                      <template #inherit-granted-icon>
+                        <slot name="inherit-granted-icon" />
+                      </template>
+                      <template #inherit-denied-icon>
+                        <slot name="inherit-denied-icon" />
+                      </template>
+                    </permission-checkbox>
+                    <!-- 约束配置器 -->
+                    <constraint-config
+                      :constraint-type="perm.constraintType"
+                      :model-value="getConstraintValue(perm.id)?.enumValue"
+                      :options="perm.metadata?.options"
+                      :multiple="perm.metadata?.multiple"
+                      :disabled="disabled || readonly"
+                      :label="perm.label"
+                      class="el-permission-table__constraint-config"
+                      @change="
+                        handleConstraintChange(
+                          perm.id,
+                          perm.constraintType!,
+                          $event
+                        )
+                      "
                     />
-                    <span class="el-permission-table__permission-label">
-                      {{ perm.label }}
-                    </span>
                   </div>
                 </div>
               </td>
@@ -165,11 +215,16 @@
 import { computed, ref, toRefs, watch } from 'vue'
 import { ElIcon } from '@element-plus/components/icon'
 import { ArrowRight } from '@element-plus/icons-vue'
-import { PermissionCheckbox } from './components'
+import { ConstraintConfig, PermissionCheckbox } from './components'
 import { useCascadeSelection } from './composables'
-import { InheritState } from './types'
+import { InheritState, permissionTableProps } from './types'
 
-import type { PermissionNode } from './types'
+import type {
+  ConstraintConfig as ConstraintConfigType,
+  ConstraintType,
+  PermissionDefinition,
+  PermissionNode,
+} from './types'
 
 defineOptions({
   name: 'ElPermissionTable',
@@ -179,6 +234,12 @@ interface NodeState {
   inherit: InheritState
   granted: boolean
   indeterminate: boolean
+}
+
+/** 处理后的权限项（包含定义和状态） */
+interface ProcessedPermission extends PermissionDefinition {
+  state: NodeState
+  constraintValue?: ConstraintConfigType
 }
 
 interface FlatRow {
@@ -197,40 +258,18 @@ interface FlatRow {
   level4Label?: string
   level4Rowspan?: number
   level4State?: NodeState
-  permissions: { id: string; label: string; state: NodeState }[]
+  permissions: ProcessedPermission[]
 }
 
 interface ProcessedLevel1 {
   id: string
   label: string
   state: NodeState
-  permissions?: { id: string; label: string; state: NodeState }[]
+  permissions?: ProcessedPermission[]
   flatRows: FlatRow[]
 }
 
-const props = withDefaults(
-  defineProps<{
-    data?: PermissionNode[]
-    inheritState?: Record<string, InheritState>
-    grantedState?: Record<string, boolean>
-    /** 角色拥有的权限ID集合，用于计算继承状态 */
-    rolePermissions?: Set<string> | string[]
-    defaultExpandAll?: boolean
-    showInherit?: boolean
-    disabled?: boolean
-    readonly?: boolean
-  }>(),
-  {
-    data: () => [],
-    inheritState: () => ({}),
-    grantedState: () => ({}),
-    rolePermissions: undefined,
-    defaultExpandAll: false,
-    showInherit: true,
-    disabled: false,
-    readonly: false,
-  }
-)
+const props = defineProps(permissionTableProps)
 
 // 解构常用 props 供模板使用
 const { showInherit, disabled, readonly } = toRefs(props)
@@ -238,10 +277,15 @@ const { showInherit, disabled, readonly } = toRefs(props)
 const emit = defineEmits<{
   'permission-change': [
     id: string,
-    data: { inherit: InheritState; granted: boolean },
+    data: {
+      inherit: InheritState
+      granted: boolean
+      constraint?: ConstraintConfigType
+    },
   ]
   'update:inheritState': [state: Record<string, InheritState>]
   'update:grantedState': [state: Record<string, boolean>]
+  'update:constraintState': [state: Record<string, ConstraintConfigType>]
 }>()
 
 // 使用级联选择 composable
@@ -314,9 +358,8 @@ const countRows = (node: PermissionNode): number => {
 // 角色权限集合（标准化为 Set）
 const rolePermissionsSet = computed(() => {
   if (!props.rolePermissions) return new Set<string>()
-  return props.rolePermissions instanceof Set
-    ? props.rolePermissions
-    : new Set(props.rolePermissions)
+  const value = props.rolePermissions as Set<string> | string[]
+  return value instanceof Set ? value : new Set(value)
 })
 
 // 计算角色决定的继承状态
@@ -462,6 +505,36 @@ const handleGrantedChange = (id: string, granted: boolean) => {
   emitStates(id)
 }
 
+// 约束状态（内部维护）
+const constraintStateMap = ref<Record<string, ConstraintConfigType>>({})
+
+// 初始化约束状态
+watch(
+  () => props.constraintState,
+  (state) => {
+    constraintStateMap.value = { ...state }
+  },
+  { immediate: true, deep: true }
+)
+
+// 获取约束配置
+const getConstraintValue = (id: string): ConstraintConfigType | undefined => {
+  return constraintStateMap.value[id]
+}
+
+// 处理约束配置变更
+const handleConstraintChange = (
+  id: string,
+  constraintType: ConstraintType,
+  value: string | number | (string | number)[] | undefined
+) => {
+  constraintStateMap.value[id] = {
+    type: constraintType,
+    enumValue: value,
+  }
+  emitStates(id)
+}
+
 // 触发状态更新事件
 const emitStates = (changedId: string) => {
   const { inheritState, grantedState } = cascade.exportStates()
@@ -469,9 +542,11 @@ const emitStates = (changedId: string) => {
   emit('permission-change', changedId, {
     inherit: cascade.getInheritState(changedId),
     granted: cascade.getGrantedState(changedId),
+    constraint: constraintStateMap.value[changedId],
   })
   emit('update:inheritState', inheritState)
   emit('update:grantedState', grantedState)
+  emit('update:constraintState', { ...constraintStateMap.value })
 }
 
 /**
@@ -489,13 +564,19 @@ const collapseAll = () => {
 
 /**
  * 重置组件状态
- * 恢复到初始状态：所有一级菜单收起，减少渲染节点
+ * @param resetData 是否同时重置数据状态（约束配置），默认 false
  */
-const reset = () => {
+const reset = (resetData = false) => {
   // 清空展开状态
   expandedLevel1.value = new Set()
-  // 清空已渲染状态，下次展开才渲染
+  // 清空已渲染状态，下次展开时重新渲染
   renderedLevel1.value = new Set()
+
+  // 可选：重置约束配置状态
+  if (resetData) {
+    constraintStateMap.value = {}
+    emit('update:constraintState', {})
+  }
 }
 
 defineExpose({
