@@ -1,0 +1,3 @@
+import '@element-plus/components/select/style/css'
+import '@element-plus/components/checkbox/style/css'
+import '@element-plus/theme-chalk/el-permission-table.css'

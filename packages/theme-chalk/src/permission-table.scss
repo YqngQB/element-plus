@@ -102,7 +102,7 @@
   }
 
   @include e(permission-label) {
-    font-size: 13px;
+    font-size: var(--el-font-size-small);
     color: getCssVar('text-color', 'regular');
   }
 }
@@ -113,6 +113,10 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+}
+
+.el-permission-table__label {
+  font-size: var(--el-font-size-small);
 }
 
 .el-permission-checkbox__inherit {
@@ -160,4 +164,8 @@
 
 .el-permission-checkbox__granted .el-checkbox__label {
   display: none;
+}
+
+.el-constraint-config {
+  max-width: 160px;
 }
