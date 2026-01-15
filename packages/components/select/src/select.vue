@@ -53,7 +53,10 @@
               nsSelect.e('selection'),
               nsSelect.is(
                 'near',
-                multiple && !$slots.prefix && !!states.selected.length
+                multiple &&
+                  !$slots.prefix &&
+                  !!states.selected.length &&
+                  !isFocused
               ),
             ]"
           >
