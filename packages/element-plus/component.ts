@@ -114,6 +114,10 @@ import { ElAnchor, ElAnchorLink } from '@element-plus/components/anchor'
 import { ElSegmented } from '@element-plus/components/segmented'
 import { ElMention } from '@element-plus/components/mention'
 import { ElSplitter, ElSplitterPanel } from '@element-plus/components/splitter'
+import {
+  ElConstraintConfig,
+  ElPermissionTable,
+} from '@element-plus/components/permission-table'
 
 import type { Plugin } from 'vue'
 
@@ -230,4 +234,6 @@ export default [
   ElMention,
   ElSplitter,
   ElSplitterPanel,
+  ElConstraintConfig,
+  ElPermissionTable,
 ] as Plugin[]

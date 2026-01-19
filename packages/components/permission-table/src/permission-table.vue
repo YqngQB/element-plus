@@ -2,10 +2,10 @@
   <div class="el-permission-table">
     <table class="el-permission-table__table">
       <colgroup>
-        <col style="width: 150px" />
-        <col style="width: 150px" />
-        <col style="width: 150px" />
-        <col />
+        <col :style="{ width: normalizedColumnWidths[0] }" />
+        <col :style="{ width: normalizedColumnWidths[1] }" />
+        <col :style="{ width: normalizedColumnWidths[2] }" />
+        <col :style="{ width: normalizedColumnWidths[3] }" />
       </colgroup>
       <tbody>
         <template v-for="level1 in processedData" :key="level1.id">
@@ -274,7 +274,16 @@ interface ProcessedLevel1 {
 const props = defineProps(permissionTableProps)
 
 // 解构常用 props 供模板使用
-const { showInherit, disabled, readonly } = toRefs(props)
+const { showInherit, disabled, readonly, columnWidths } = toRefs(props)
+
+// 标准化列宽（支持数字和字符串）
+const normalizedColumnWidths = computed(() => {
+  return (columnWidths.value as (string | number)[]).map((width) => {
+    if (!width) return 'auto'
+    if (typeof width === 'number') return `${width}px`
+    return String(width)
+  })
+})
 
 const emit = defineEmits<{
   'permission-change': [

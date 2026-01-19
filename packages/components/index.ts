@@ -79,6 +79,7 @@ export * from './anchor'
 export * from './segmented'
 export * from './mention'
 export * from './splitter'
+export * from './permission-table'
 
 // plugins
 export * from './infinite-scroll'

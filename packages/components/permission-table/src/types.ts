@@ -1,4 +1,5 @@
 import { buildProps, definePropType } from '@element-plus/utils'
+import { Props } from '@element-plus/components/select-v2/src/useProps'
 
 import type { ExtractPropTypes } from 'vue'
 
@@ -65,6 +66,8 @@ export interface PermissionMetadata {
   multiple?: boolean
   /** 说明文档 */
   description?: string
+  /** Select 组件 Props 配置（预留） */
+  props?: Props
 }
 
 /**
@@ -191,6 +194,13 @@ export const permissionTableProps = buildProps({
    * @description 是否只读
    */
   readonly: Boolean,
+  /**
+   * @description 表格列宽配置（从左到右：一级菜单、二级菜单、三级页面、权限）
+   */
+  columnWidths: {
+    type: definePropType<(string | number)[]>(Array),
+    default: () => ['200px', '200px', '200px', 'auto'],
+  },
 } as const)
 
 export type PermissionTableProps = ExtractPropTypes<typeof permissionTableProps>
