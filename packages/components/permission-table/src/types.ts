@@ -57,10 +57,6 @@ export interface OptionItem {
  * 权限定义元数据
  */
 export interface PermissionMetadata {
-  /** 资源类型（button/field/column） */
-  resourceType?: string
-  /** 资源标识（用于前端识别） */
-  resourceKey?: string
   /** 默认值 */
   defaultValue?: any
   /** 可选项（ENUM类型使用） */
@@ -85,6 +81,8 @@ export interface PermissionDefinition {
   constraintType?: ConstraintType
   /** 元数据 */
   metadata?: PermissionMetadata
+  /** 额外配置 (用于存放后端需要的参数) */
+  extraConfig?: Record<string, unknown>
   /** UI配置 (预留) */
   // uiConfig?: Record<string, unknown>
 }

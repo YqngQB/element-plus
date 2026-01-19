@@ -8,3 +8,8 @@ export const ElPermissionTable: SFCWithInstall<typeof PermissionTable> =
 export default ElPermissionTable
 
 export * from './src/types'
+export * from './src/adapters'
+export {
+  PermissionCheckbox,
+  ConstraintConfig as ElConstraintConfig,
+} from './src/components'

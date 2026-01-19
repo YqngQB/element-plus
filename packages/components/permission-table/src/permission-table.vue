@@ -167,11 +167,12 @@
                   >
                     <permission-checkbox
                       :inherit="perm.state.inherit"
-                      :granted="perm.state.granted"
+                      :granted="getPermissionGrantedState(perm)"
                       :indeterminate="perm.state.indeterminate"
                       :show-inherit="showInherit"
                       :disabled="disabled"
                       :readonly="readonly"
+                      :constraint-type="perm.constraintType"
                       :role-inherit-state="getRoleInheritState(perm.id)"
                       @inherit-change="handleInheritChange(perm.id, $event)"
                       @granted-change="handleGrantedChange(perm.id, $event)"
@@ -190,6 +191,7 @@
                       :options="perm.metadata?.options"
                       :multiple="perm.metadata?.multiple"
                       :disabled="disabled || readonly"
+                      :inherit="perm.state.inherit"
                       :label="perm.label"
                       class="el-permission-table__constraint-config"
                       @change="
@@ -377,6 +379,36 @@ const getNodeState = (id: string): NodeState => ({
   indeterminate: cascade.getIndeterminateState(id),
 })
 
+// 获取权限项的实际勾选状态（约束优先，但级联取消仍生效）
+const getPermissionGrantedState = (perm: PermissionDefinition): boolean => {
+  // 如果存在约束条件
+  if (perm.constraintType !== 'none') {
+    // 首先检查是否有约束值
+    const constraintValue = constraintStateMap.value[perm.id]
+    const hasConstraintValue =
+      constraintValue?.enumValue !== undefined &&
+      constraintValue?.enumValue !== null &&
+      (Array.isArray(constraintValue?.enumValue)
+        ? constraintValue?.enumValue.length > 0
+        : !!constraintValue?.enumValue)
+
+    // 关键逻辑：有约束值 AND 级联状态允许（级联中有 false 则也是 false）
+    // 这样既保证了约束优先，又保留了父级取消勾选的级联效果
+    const result = hasConstraintValue && cascade.getGrantedState(perm.id)
+    // 如果有约束值，但是级联状态为 false,清空 约束值
+    if (hasConstraintValue && !result) {
+      constraintStateMap.value[perm.id] = {
+        type: perm.constraintType!,
+        enumValue: undefined,
+      }
+      emit('update:constraintState', { ...constraintStateMap.value })
+    }
+    return result
+  }
+  // 无约束时，使用级联选择的 granted 状态
+  return cascade.getGrantedState(perm.id)
+}
+
 // 处理数据，生成扁平化行
 const processedData = computed<ProcessedLevel1[]>(() => {
   // 依赖 stateVersion 触发更新
@@ -528,10 +560,24 @@ const handleConstraintChange = (
   constraintType: ConstraintType,
   value: string | number | (string | number)[] | undefined
 ) => {
+  // debugger
   constraintStateMap.value[id] = {
     type: constraintType,
     enumValue: value,
   }
+
+  // 对于有约束的权限项，值的变化直接影响 granted 状态
+  // 如果有值，设置 granted 为 true；无值时设置为 false
+  if (
+    value !== undefined &&
+    value !== null &&
+    (Array.isArray(value) ? value.length > 0 : !!value)
+  ) {
+    cascade.setGrantedState(id, true)
+  } else {
+    cascade.setGrantedState(id, false)
+  }
+
   emitStates(id)
 }
 
@@ -583,8 +629,6 @@ defineExpose({
   expandAll,
   collapseAll,
   reset,
-  getGrantedKeys: cascade.getGrantedKeys,
-  getInheritedKeys: cascade.getInheritedKeys,
-  exportStates: cascade.exportStates,
+  cascade,
 })
 </script>

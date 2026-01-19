@@ -76,6 +76,8 @@ import { computed } from 'vue'
 import { ElCheckbox } from '@element-plus/components/checkbox'
 import { InheritState } from '../types'
 
+import type { ConstraintType } from '../types'
+
 defineOptions({
   name: 'ElPermissionCheckbox',
 })
@@ -88,6 +90,8 @@ const props = withDefaults(
     readonly?: boolean
     showInherit?: boolean
     disabled?: boolean
+    /** 约束类型 */
+    constraintType?: ConstraintType
     /** 角色决定的继承状态（当用户选择继承时，应该继承的状态） */
     roleInheritState?: InheritState
   }>(),
@@ -109,7 +113,12 @@ const emit = defineEmits<{
 
 // 是否禁用方形（圆形有继承状态时禁用，或组件整体禁用）
 const isGrantedDisabled = computed(() => {
-  return props.disabled || props.inherit !== InheritState.NONE || props.readonly
+  return (
+    props.disabled ||
+    props.inherit !== InheritState.NONE ||
+    props.readonly ||
+    (!!props.constraintType && props.constraintType !== 'none')
+  )
 })
 
 // 是否禁用圆形

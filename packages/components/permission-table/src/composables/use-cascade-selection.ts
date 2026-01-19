@@ -187,47 +187,13 @@ export function useCascadeSelection(
       newStates.set(descId, state)
     }
 
-    // 3. 向上计算：更新所有祖先
-    // 继承状态没有半选，只要有任一子节点有继承状态，父节点就有
-    for (const ancestorId of [...nodeInfo.ancestorIds].reverse()) {
-      const ancestorInfo = nodeMap.value.get(ancestorId)
-      if (!ancestorInfo) continue
-
-      // 检查所有直接子节点和权限的继承状态
-      const allChildIds = [
-        ...ancestorInfo.childIds,
-        ...ancestorInfo.permissionIds,
-      ]
-      let hasGranted = false
-      let hasDenied = false
-      let hasNone = false
-
-      for (const childId of allChildIds) {
-        const childState = newStates.get(childId) ?? 0
-        if (childState === 1) hasGranted = true
-        else if (childState === 2) hasDenied = true
-        else hasNone = true
-      }
-
-      // 决定祖先状态
-      let ancestorState: InheritState = 0
-      if (hasGranted && !hasDenied && !hasNone) {
-        ancestorState = 1 // 全部 GRANTED
-      } else if (hasDenied && !hasGranted && !hasNone) {
-        ancestorState = 2 // 全部 DENIED
-      } else if (hasGranted || hasDenied) {
-        // 混合状态：取主要的（有任何继承就选中）
-        ancestorState = hasGranted ? 1 : 2
-      }
-      // 否则保持 NONE
-
-      newStates.set(ancestorId, ancestorState)
-    }
+    // 3. 向上级联：不强制父节点跟随子节点的继承状态
+    // 父节点的继承状态应该独立设置，不受子节点影响
 
     // 4. 处理继承状态变化对 granted 的影响
     const newGrantedStates = new Map(grantedStates.value)
-    // 当从继承有权限变为不继承时，自动勾选个人权限
-    if (oldState === 1 && state === 0) {
+    // 当从继承状态变为不继承时，自动勾选个人权限
+    if (oldState !== 0 && state === 0) {
       newGrantedStates.set(id, true)
       for (const descId of nodeInfo.descendantIds) {
         newGrantedStates.set(descId, true)
@@ -254,7 +220,9 @@ export function useCascadeSelection(
     if (!nodeInfo) return
 
     // 如果有继承状态，不能设置个人权限
-    if ((inheritStates.value.get(id) ?? 0) !== 0) return
+    if ((inheritStates.value.get(id) ?? 0) !== 0) {
+      return
+    }
 
     const newStates = new Map(grantedStates.value)
 
@@ -268,43 +236,18 @@ export function useCascadeSelection(
       }
     }
 
-    // 3. 向上计算：更新所有祖先的状态
-    for (const ancestorId of [...nodeInfo.ancestorIds].reverse()) {
-      // 跳过有继承状态的祖先
-      if ((inheritStates.value.get(ancestorId) ?? 0) !== 0) continue
-
-      const ancestorInfo = nodeMap.value.get(ancestorId)
-      if (!ancestorInfo) continue
-
-      // 检查所有后代的状态（只统计无继承状态的节点）
-      const descendants = ancestorInfo.descendantIds
-      let allChecked = true
-      let anyChecked = false
-      let validCount = 0 // 有效节点计数
-
-      for (const descId of descendants) {
-        // 跳过有继承状态的节点
-        if ((inheritStates.value.get(descId) ?? 0) !== 0) continue
-        validCount++
-        if (newStates.get(descId)) {
-          anyChecked = true
-        } else {
-          allChecked = false
-        }
-      }
-
-      // 设置祖先状态
-      if (validCount > 0 && allChecked) {
-        // 所有有效后代都选中时，祖先也选中
+    // 3. 向上级联：仅在勾选时确保祖先也勾选（保证依赖关系）
+    // 取消勾选时不影响祖先（父节点独立于子节点）
+    if (granted) {
+      // 子节点勾选时，向上确保所有祖先都勾选（子功能依托父菜单）
+      for (const ancestorId of nodeInfo.ancestorIds) {
+        // 跳过有继承状态的祖先
+        if ((inheritStates.value.get(ancestorId) ?? 0) !== 0) continue
+        // 确保祖先勾选
         newStates.set(ancestorId, true)
-      } else if (anyChecked) {
-        // 部分选中，祖先不选中（半选状态通过 getIndeterminateState 计算）
-        newStates.set(ancestorId, false)
-      } else {
-        // 没有选中的，祖先不选中
-        newStates.set(ancestorId, false)
       }
     }
+    // 取消勾选时不处理祖先（保持祖先的独立性）
 
     // 批量更新
     grantedStates.value = newStates

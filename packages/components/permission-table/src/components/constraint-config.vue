@@ -14,13 +14,14 @@
       <el-select
         v-model="selectValue"
         :multiple="multiple"
-        :disabled="disabled"
+        :disabled="effectiveDisabled"
         :placeholder="placeholder"
         :persistent="false"
         filterable
         collapse-tags
         collapse-tags-tooltip
         size="small"
+        clearable
         class="el-constraint-config__select"
         @change="
           (value) => (multiple ? handleMultiChange(value) : handleChange(value))
@@ -40,6 +41,7 @@
       <slot
         :type="constraintType"
         :value="modelValue"
+        :inherit="inherit"
         :on-change="handleChange"
       >
         <span class="el-constraint-config__placeholder">
@@ -53,7 +55,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import ElSelect from '@element-plus/components/select'
-import { ConstraintType } from '../types'
+import { ConstraintType, InheritState } from '../types'
 
 import type { OptionItem } from '../types'
 
@@ -79,8 +81,11 @@ const props = withDefaults(
     placeholder?: string
     /** 文本标签 */
     label?: string
+    /** 继承关系 */
+    inherit?: InheritState
   }>(),
   {
+    inherit: InheritState.NONE,
     constraintType: ConstraintType.NONE,
     modelValue: undefined,
     options: () => [],
@@ -96,6 +101,11 @@ const emit = defineEmits<{
   ]
   change: [value: string | number | (string | number)[] | undefined]
 }>()
+
+// 计算实际的禁用状态（存在继承关系时必须禁用）
+const effectiveDisabled = computed(
+  () => props.disabled || props.inherit !== InheritState.NONE
+)
 
 // 单选值
 const localValue = ref<string | number | undefined>()
@@ -127,6 +137,18 @@ watch(
           : []
     } else {
       localValue.value = Array.isArray(val) ? val[0] : val
+    }
+  },
+  { immediate: true }
+)
+
+// 监听继承状态变化，有继承时清空值
+watch(
+  () => props.inherit,
+  (inherit) => {
+    if (inherit !== InheritState.NONE) {
+      localValue.value = undefined
+      localMultiValue.value = []
     }
   },
   { immediate: true }
