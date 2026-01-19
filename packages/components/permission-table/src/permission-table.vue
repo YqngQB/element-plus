@@ -193,6 +193,8 @@
                       :disabled="disabled || readonly"
                       :inherit="perm.state.inherit"
                       :label="perm.label"
+                      :permission-select-props="perm.metadata?.selectProps"
+                      :select-props="props.selectProps"
                       class="el-permission-table__constraint-config"
                       @change="
                         handleConstraintChange(

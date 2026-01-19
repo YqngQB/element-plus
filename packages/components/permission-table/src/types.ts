@@ -1,5 +1,4 @@
 import { buildProps, definePropType } from '@element-plus/utils'
-import { Props } from '@element-plus/components/select-v2/src/useProps'
 
 import type { ExtractPropTypes } from 'vue'
 
@@ -66,8 +65,8 @@ export interface PermissionMetadata {
   multiple?: boolean
   /** 说明文档 */
   description?: string
-  /** Select 组件 Props 配置（预留） */
-  props?: Props
+  /** ElSelect 选择器配置（ENUM/USER_SELECT类型使用） */
+  selectProps?: Record<string, any>
 }
 
 /**
@@ -200,6 +199,12 @@ export const permissionTableProps = buildProps({
   columnWidths: {
     type: definePropType<(string | number)[]>(Array),
     default: () => ['200px', '200px', '200px', 'auto'],
+  } /**
+   * @description ElSelect 选择器配置
+   */,
+  selectProps: {
+    type: definePropType<Record<string, any>>(Object),
+    default: () => ({}),
   },
 } as const)
 

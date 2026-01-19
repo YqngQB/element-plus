@@ -23,15 +23,15 @@
         size="small"
         clearable
         class="el-constraint-config__select"
+        v-bind="mergedSelectProps"
         @change="
           (value) => (multiple ? handleMultiChange(value) : handleChange(value))
         "
       >
         <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          v-for="(item, index) in options"
+          :key="getValue(item) || index"
+          v-bind="getOptionProps(item)"
         />
       </el-select>
     </template>
@@ -55,6 +55,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import ElSelect from '@element-plus/components/select'
+import { useProps as useSelectProps } from '@element-plus/components/select-v2/src/useProps'
 import { ConstraintType, InheritState } from '../types'
 
 import type { OptionItem } from '../types'
@@ -69,8 +70,13 @@ const props = withDefaults(
   defineProps<{
     /** 约束类型 */
     constraintType?: ConstraintType
-    /** 当前值 */
-    modelValue?: string | number | (string | number)[]
+    /** 当前值（支持 string | number | boolean | object 及其数组，与 ElSelect 保持一致） */
+    modelValue?:
+      | string
+      | number
+      | boolean
+      | Record<string, any>
+      | (string | number | boolean | Record<string, any>)[]
     /** 可选项（ENUM 类型使用） */
     options?: OptionItem[]
     /** 是否多选（ENUM 类型使用） */
@@ -83,6 +89,10 @@ const props = withDefaults(
     label?: string
     /** 继承关系 */
     inherit?: InheritState
+    /** 权限级别的 ElSelect 配置 */
+    permissionSelectProps?: Record<string, any>
+    /** 全局 ElSelect 配置（降级用） */
+    selectProps?: Record<string, any>
   }>(),
   {
     inherit: InheritState.NONE,
@@ -92,35 +102,82 @@ const props = withDefaults(
     multiple: false,
     disabled: false,
     placeholder: '请选择',
+    permissionSelectProps: () => ({}),
+    selectProps: () => ({}),
   }
 )
 
 const emit = defineEmits<{
   'update:modelValue': [
-    value: string | number | (string | number)[] | undefined,
+    value:
+      | string
+      | number
+      | boolean
+      | Record<string, any>
+      | (string | number | boolean | Record<string, any>)[]
+      | undefined,
   ]
-  change: [value: string | number | (string | number)[] | undefined]
+  change: [
+    value:
+      | string
+      | number
+      | boolean
+      | Record<string, any>
+      | (string | number | boolean | Record<string, any>)[]
+      | undefined,
+  ]
 }>()
+
+// 合并 selectProps：优先使用权限级别的配置，回退到全局配置
+const mergedSelectProps = computed(() => {
+  return {
+    ...props.selectProps,
+    ...props.permissionSelectProps,
+  }
+})
+
+// 使用 select 的 props 处理器来支持灵活的数据格式
+const { getLabel, getValue } = useSelectProps(mergedSelectProps as any)
+
+// 获取选项的 props
+const getOptionProps = (option: Record<string, any>) => ({
+  label: getLabel(option),
+  value: getValue(option),
+})
 
 // 计算实际的禁用状态（存在继承关系时必须禁用）
 const effectiveDisabled = computed(
   () => props.disabled || props.inherit !== InheritState.NONE
 )
 
-// 单选值
-const localValue = ref<string | number | undefined>()
+// 单选值（支持 string | number | boolean | object）
+const localValue = ref<
+  string | number | boolean | Record<string, any> | undefined
+>()
 
-// 多选值
-const localMultiValue = ref<(string | number)[]>([])
+// 多选值（支持基础类型和对象的数组）
+const localMultiValue = ref<
+  (string | number | boolean | Record<string, any>)[]
+>([])
 
 // v-model 绑定的计算属性
 const selectValue = computed({
   get: () => (props.multiple ? localMultiValue.value : localValue.value),
   set: (val) => {
     if (props.multiple) {
-      localMultiValue.value = val as (string | number)[]
+      localMultiValue.value = val as (
+        | string
+        | number
+        | boolean
+        | Record<string, any>
+      )[]
     } else {
-      localValue.value = val as string | number | undefined
+      localValue.value = val as
+        | string
+        | number
+        | boolean
+        | Record<string, any>
+        | undefined
     }
   },
 })
@@ -155,19 +212,16 @@ watch(
 )
 
 // 处理单选变更
-const handleChange = (val: string | number | boolean | undefined) => {
-  // 过滤掉 boolean 类型（来自 RadioGroup change 事件）
-  const normalizedVal =
-    typeof val === 'boolean' ? undefined : (val as string | number | undefined)
-  emit('change', normalizedVal)
+const handleChange = (
+  val: string | number | boolean | Record<string, any> | undefined
+) => {
+  emit('change', val)
 }
 
 // 处理多选变更
-const handleMultiChange = (val: (string | number | boolean)[]) => {
-  // 过滤掉 boolean 类型（来自 CheckboxGroup change 事件）
-  const normalizedVal = val.filter(
-    (v): v is string | number => typeof v !== 'boolean'
-  )
-  emit('change', normalizedVal)
+const handleMultiChange = (
+  val: (string | number | boolean | Record<string, any>)[]
+) => {
+  emit('change', val)
 }
 </script>
