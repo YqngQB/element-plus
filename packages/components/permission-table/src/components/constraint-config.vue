@@ -15,7 +15,6 @@
         v-model="selectValue"
         :multiple="multiple"
         :disabled="effectiveDisabled"
-        :placeholder="placeholder"
         :persistent="false"
         filterable
         collapse-tags
@@ -83,8 +82,6 @@ const props = withDefaults(
     multiple?: boolean
     /** 是否禁用 */
     disabled?: boolean
-    /** 占位文本 */
-    placeholder?: string
     /** 文本标签 */
     label?: string
     /** 继承关系 */
@@ -137,7 +134,7 @@ const mergedSelectProps = computed(() => {
 })
 
 // 使用 select 的 props 处理器来支持灵活的数据格式
-const { getLabel, getValue } = useSelectProps(mergedSelectProps as any)
+const { getLabel, getValue } = useSelectProps(mergedSelectProps.value as any)
 
 // 获取选项的 props
 const getOptionProps = (option: Record<string, any>) => ({
