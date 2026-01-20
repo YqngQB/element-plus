@@ -20,7 +20,7 @@ export interface AuthorizationInfoModel {
   /** 权限类型（1数据，2按钮，3导出，4审核，5字段） */
   authorizationType?: number
   /** 权限项值（用户选择的枚举值） */
-  authorizationItemValues?: (number | string)[]
+  authorizationItemValues?: (number | string | Record<string, any>)[]
   /** 是否继承（0不继承，1继承，-1无权限） */
   isExtendPermission?: number
 }

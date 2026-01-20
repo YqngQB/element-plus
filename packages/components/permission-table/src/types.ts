@@ -96,7 +96,7 @@ export interface ConstraintConfig {
   /** 约束类型 */
   type: ConstraintType
   /** ENUM类型的值（单选为 string/number，多选为数组） */
-  enumValue?: string | number | (string | number)[]
+  enumValue?: string | number | (number | string | Record<string, any>)[]
   /** USER_SELECT类型的用户ID列表（预留） */
   // userIds?: string[]
   /** ROLE_SELECT类型的角色ID列表（预留） */
