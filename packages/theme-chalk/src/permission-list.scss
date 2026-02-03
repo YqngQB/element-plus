@@ -1,0 +1,120 @@
+@use 'mixins/mixins' as *;
+@use 'common/var' as *;
+
+@include b(permission-list) {
+  width: 100%;
+  font-size: 14px;
+  color: getCssVar('text-color', 'regular');
+  border: 1px solid getCssVar('border-color', 'lighter');
+  border-radius: getCssVar('border-radius', 'base');
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  // 表头
+  @include e(header) {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background-color: getCssVar('fill-color', 'light');
+    border-bottom: 1px solid getCssVar('border-color', 'lighter');
+    flex-shrink: 0;
+  }
+
+  @include e(header-cell) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    font-weight: 500;
+    color: getCssVar('text-color', 'primary');
+    box-sizing: border-box;
+
+    &:first-child {
+      border-right: 1px solid getCssVar('border-color', 'lighter');
+    }
+  }
+
+  // 虚拟滚动容器 - 使用 el-scrollbar 后样式由组件处理
+  @include e(body) {
+    flex: 1;
+  }
+
+  // 行
+  @include e(row) {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid getCssVar('border-color', 'lighter');
+    box-sizing: border-box;
+    background-color: getCssVar('bg-color');
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: getCssVar('fill-color', 'light');
+    }
+  }
+
+  // 单元格
+  @include e(cell) {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    box-sizing: border-box;
+    height: 48px; // 使用固定高度而非 min-height
+    gap: 8px;
+    overflow: hidden; // 防止内容溢出
+
+    &:first-child {
+      border-right: 1px solid getCssVar('border-color', 'lighter');
+      flex-shrink: 0; // 防止第一列被压缩
+    }
+  }
+
+  // 权限容器 - 横向滚动由 el-scrollbar 处理
+  @include e(permissions) {
+    display: flex;
+    flex-wrap: nowrap; // 不换行，保持单行显示
+    gap: 16px;
+    align-items: center;
+  }
+
+  // 权限项容器（包含复选框和约束配置器）
+  @include e(permission-item) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0; // 防止被压缩，保持完整显示
+    white-space: nowrap; // 防止文本换行
+  }
+
+  // 约束配置器
+  @include e(constraint-config) {
+    flex-shrink: 0;
+  }
+
+  // 空权限占位
+  @include e(empty-perm) {
+    color: getCssVar('text-color', 'placeholder');
+  }
+
+  // 空状态
+  @include e(empty) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: getCssVar('text-color', 'placeholder');
+  }
+
+  @include e(empty-text) {
+    font-size: 14px;
+  }
+
+  // 禁用状态
+  @include when(disabled) {
+    @include e(row) {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

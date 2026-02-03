@@ -9,6 +9,7 @@ export default ElPermissionTable
 
 export * from './src/types'
 export * from './src/adapters'
+export * from './src/composables'
 export {
   PermissionCheckbox,
   ConstraintConfig as ElConstraintConfig,

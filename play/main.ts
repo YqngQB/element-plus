@@ -4,6 +4,8 @@ import '@element-plus/theme-chalk/src/dark/css-vars.scss'
 import '@element-plus/theme-chalk/src/notification.scss'
 import '@element-plus/theme-chalk/src/message-box.scss'
 import '@element-plus/theme-chalk/src/message.scss'
+import '@element-plus/components/permission-table/style'
+import '@element-plus/components/permission-list/style'
 
 // #21498
 window.addEventListener('error', (e: ErrorEvent) => {

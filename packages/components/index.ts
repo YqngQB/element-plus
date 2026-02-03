@@ -80,6 +80,7 @@ export * from './segmented'
 export * from './mention'
 export * from './splitter'
 export * from './permission-table'
+export * from './permission-list'
 
 // plugins
 export * from './infinite-scroll'
