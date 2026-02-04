@@ -10,25 +10,21 @@
     <!-- 表头 -->
     <div :class="ns.e('header')">
       <div :class="ns.e('header-cell')" style="width: 280px">
-        <permission-checkbox
-          :inherit="allInheritState"
-          :granted="allGrantedState"
-          :indeterminate="allIndeterminateState"
-          :show-inherit="showInherit"
-          :disabled="disabled"
-          :readonly="readonly"
-          :role-inherit-state="allRoleInheritState"
-          @inherit-change="handleAllInheritChange"
-          @granted-change="handleAllGrantedChange"
+        <el-checkbox
+          :model-value="isAllInheriting"
+          :disabled="disabled || readonly"
+          @update:model-value="(val) => handleAllInheritCheckboxChange(!!val)"
         >
-          <template #inherit-granted-icon>
-            <slot name="inherit-granted-icon" />
-          </template>
-          <template #inherit-denied-icon>
-            <slot name="inherit-denied-icon" />
-          </template>
-        </permission-checkbox>
-        <span>全选 (共 {{ data.length }} 条)</span>
+          全部继承
+        </el-checkbox>
+        <el-checkbox
+          :model-value="allGrantedState"
+          :indeterminate="allIndeterminateState"
+          :disabled="disabled || readonly"
+          @update:model-value="(val) => handleAllGrantedChange(!!val)"
+        >
+          全选
+        </el-checkbox>
       </div>
       <div :class="ns.e('header-cell')" style="flex: 1">权限配置</div>
     </div>
@@ -144,6 +140,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useNamespace } from '@element-plus/hooks'
 import { ElScrollbar } from '@element-plus/components/scrollbar'
+import { ElCheckbox } from '@element-plus/components/checkbox'
 import { InheritState } from '@element-plus/components/permission-table'
 import PermissionCheckbox from '../../permission-table/src/components/permission-checkbox.vue'
 import ConstraintConfig from '../../permission-table/src/components/constraint-config.vue'
@@ -327,31 +324,6 @@ const getRoleInheritState = (id: string): InheritState => {
     : InheritState.DENIED
 }
 
-// 计算全部的继承状态
-const allInheritState = computed((): InheritState => {
-  if (props.data.length === 0) return InheritState.NONE
-
-  let hasInherit = false
-  let hasNotInherit = false
-
-  for (const item of props.data) {
-    const state = cascade.getInheritState(item.id)
-    if (state !== InheritState.NONE) {
-      hasInherit = true
-    } else {
-      hasNotInherit = true
-    }
-    if (hasInherit && hasNotInherit) break
-  }
-
-  // 如果全部都是继承状态，返回 GRANTED（假设都是同一种继承状态）
-  if (hasInherit && !hasNotInherit) {
-    return cascade.getInheritState(props.data[0].id)
-  }
-
-  return InheritState.NONE
-})
-
 // 计算全部的授权状态
 const allGrantedState = computed((): boolean => {
   if (props.data.length === 0) return false
@@ -370,17 +342,6 @@ const allIndeterminateState = computed((): boolean => {
   return grantedCount > 0 && grantedCount < props.data.length
 })
 
-// 计算全部的角色继承状态
-const allRoleInheritState = computed((): InheritState => {
-  if (props.data.length === 0) return InheritState.DENIED
-
-  const allHasPermission = props.data.every((item) =>
-    rolePermissionsSet.value.has(item.id)
-  )
-
-  return allHasPermission ? InheritState.GRANTED : InheritState.DENIED
-})
-
 // 触发状态更新事件（与 ElPermissionTable 一致）
 const emitStates = (changedId: string) => {
   const { inheritState, grantedState } = cascade.exportStates()
@@ -395,10 +356,33 @@ const emitStates = (changedId: string) => {
   emit('update:constraintState', { ...constraintStateMap.value })
 }
 
-// 处理全部继承状态变更
-const handleAllInheritChange = (state: InheritState) => {
+// 检查是否所有项都在继承状态（非 NONE）
+const isAllInheriting = computed(() => {
+  if (props.data.length === 0) return false
+  return props.data.every(
+    (item) => cascade.getInheritState(item.id) !== InheritState.NONE
+  )
+})
+
+// 处理全部继承复选框变更
+const handleAllInheritCheckboxChange = (val: boolean) => {
   for (const item of props.data) {
-    cascade.setInheritState(item.id, state)
+    const currentState = cascade.getInheritState(item.id)
+    let newState: InheritState
+
+    if (val) {
+      // 勾选：如果当前不继承，则使用该项的角色继承状态
+      if (currentState === InheritState.NONE) {
+        newState = getRoleInheritState(item.id)
+      } else {
+        newState = currentState // 保持当前继承状态
+      }
+    } else {
+      // 取消勾选：设置为不继承
+      newState = InheritState.NONE
+    }
+
+    cascade.setInheritState(item.id, newState)
   }
 
   // 使用统一的事件发射
