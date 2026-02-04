@@ -118,6 +118,7 @@ import {
   ElConstraintConfig,
   ElPermissionTable,
 } from '@element-plus/components/permission-table'
+import { ElPermissionList } from '@element-plus/components/permission-list'
 
 import type { Plugin } from 'vue'
 
@@ -236,4 +237,5 @@ export default [
   ElSplitterPanel,
   ElConstraintConfig,
   ElPermissionTable,
+  ElPermissionList,
 ] as Plugin[]
