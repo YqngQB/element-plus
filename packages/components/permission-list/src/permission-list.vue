@@ -11,6 +11,7 @@
     <div :class="ns.e('header')">
       <div :class="ns.e('header-cell')" style="width: 280px">
         <el-checkbox
+          v-if="showInherit"
           :model-value="isAllInheriting"
           :disabled="disabled || readonly"
           @update:model-value="(val) => handleAllInheritCheckboxChange(!!val)"
