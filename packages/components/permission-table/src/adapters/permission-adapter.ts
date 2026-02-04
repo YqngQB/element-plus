@@ -118,19 +118,17 @@ export class PermissionAdapter {
         })
       }
 
-      // 2. 处理节点本身（有子节点的节点才需要记录路由信息）
-      if (node.children?.length) {
-        const isExtendPermission = this.getIsExtendPermission(
-          node.id,
-          inheritState,
-          grantedState
-        )
+      // 处理节点本身（所有节点都需要记录路由信息，包括叶子节点）
+      const isExtendPermission = this.getIsExtendPermission(
+        node.id,
+        inheritState,
+        grantedState
+      )
 
-        routeInfos.push({
-          sysRouteUid: node.id,
-          isExtendPermission,
-        })
-      }
+      routeInfos.push({
+        sysRouteUid: node.id,
+        isExtendPermission,
+      })
     })
 
     return {
