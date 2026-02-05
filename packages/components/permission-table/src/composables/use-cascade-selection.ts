@@ -179,8 +179,15 @@ export function useCascadeSelection(
   /**
    * 设置继承状态（带级联）
    * 性能优化：减少 Map 查询，使用局部变量缓存
+   * @param id 节点ID
+   * @param state 继承状态（0=不继承，1=继承有权限，2=继承无权限）
+   * @param rolePermissions 角色权限列表（用于判断子节点的继承状态）
    */
-  const setInheritState = (id: string, state: InheritState) => {
+  const setInheritState = (
+    id: string,
+    state: InheritState,
+    rolePermissions?: Set<string>
+  ) => {
     const nodeInfo = nodeMap.value.get(id)
     if (!nodeInfo) return
 
@@ -191,10 +198,20 @@ export function useCascadeSelection(
     // 1. 设置当前节点
     newStates.set(id, state)
 
-    // 2. 向下级联：设置所有后代
+    // 2. 向下级联：根据角色权限设置子节点的继承状态
     const descendants = nodeInfo.descendantIds
     for (const descendant of descendants) {
-      newStates.set(descendant, state)
+      // 如果提供了角色权限列表且设置为继承状态，则根据角色实际权限判断
+      if (state !== 0 && rolePermissions) {
+        // 根据角色是否拥有该子权限，设置对应的继承状态
+        const childState = rolePermissions.has(descendant)
+          ? 1 // InheritState.GRANTED
+          : 2 // InheritState.DENIED
+        newStates.set(descendant, childState)
+      } else {
+        // 设置为不继承(0)或未提供角色权限时，统一设置
+        newStates.set(descendant, state)
+      }
     }
 
     // 3. 向上级联：设置为继承时，只对"不继承+未勾选"的祖先设置继承状态

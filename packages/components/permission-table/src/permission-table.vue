@@ -559,7 +559,8 @@ const processedData = computed<ProcessedLevel1[]>(() => {
 
 // 处理继承状态变更
 const handleInheritChange = (id: string, state: InheritState) => {
-  cascade.setInheritState(id, state)
+  // 传入角色权限集合，以便子节点根据实际权限设置继承状态
+  cascade.setInheritState(id, state, rolePermissionsSet.value)
   emitStates(id)
 }
 
@@ -660,9 +661,29 @@ const reset = (resetData = false) => {
 }
 
 defineExpose({
+  // 展开/收起控制
   expandAll,
   collapseAll,
   reset,
+  toggleLevel1,
+  isLevel1Expanded,
+  expandedLevel1,
+
+  // 级联选择核心（包含 nodeMap, stateVersion, setInheritState, setGrantedState 等）
   cascade,
+
+  // 状态查询
+  getRoleInheritState,
+  getNodeState,
+
+  // 约束配置
+  constraintStateMap,
+  getConstraintValue,
+  handleConstraintChange,
+
+  // 数据相关
+  processedData,
+  rolePermissionsSet,
+  isInitialized,
 })
 </script>

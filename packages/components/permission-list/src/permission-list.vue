@@ -404,7 +404,7 @@ const handleAllInheritCheckboxChange = (val: boolean) => {
       newState = InheritState.NONE
     }
 
-    cascade.setInheritState(item.id, newState)
+    cascade.setInheritState(item.id, newState, rolePermissionsSet.value)
   }
 
   // 使用统一的事件发射
@@ -427,7 +427,8 @@ const handleAllGrantedChange = (granted: boolean) => {
 
 // 处理继承状态变更
 const handleInheritChange = (id: string, state: InheritState) => {
-  cascade.setInheritState(id, state)
+  // 传入角色权限集合，以便子节点根据实际权限设置继承状态
+  cascade.setInheritState(id, state, rolePermissionsSet.value)
   emitStates(id)
 }
 
@@ -542,7 +543,40 @@ onUnmounted(() => {
 })
 
 defineExpose({
+  // 重置和滚动控制
   reset,
   scrollToIndex,
+  scrollTop,
+  scrollbarRef,
+
+  // 级联选择核心（包含 nodeMap, stateVersion, setInheritState, setGrantedState 等）
+  cascade,
+
+  // 状态查询
+  getRoleInheritState,
+
+  // 全选/全继承状态
+  allGrantedState,
+  allIndeterminateState,
+  isAllInheriting,
+  handleAllInheritCheckboxChange,
+  handleAllGrantedChange,
+
+  // 约束配置
+  constraintStateMap,
+  getConstraintValue,
+  handleConstraintChange,
+  getPermissionGrantedState,
+
+  // 数据相关
+  cascadeData,
+  rolePermissionsSet,
+  visibleItems,
+  isInitialized,
+
+  // 计算属性
+  normalizedHeight,
+  bodyHeight,
+  totalHeight,
 })
 </script>
