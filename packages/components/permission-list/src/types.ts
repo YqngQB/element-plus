@@ -52,6 +52,15 @@ export const permissionListProps = {
     type: Boolean,
     default: true,
   },
+  /**
+   * 未配置的权限项是否默认继承角色权限（仅在 showInherit=true 时生效）
+   * - true: 未配置的权限项默认继承（根据 rolePermissions 判断 GRANTED 或 DENIED）
+   * - false: 未配置的权限项默认不继承（当前行为）
+   */
+  defaultInherit: {
+    type: Boolean,
+    default: false,
+  },
   /** 是否禁用 */
   disabled: {
     type: Boolean,

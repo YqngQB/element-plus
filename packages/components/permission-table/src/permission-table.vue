@@ -222,6 +222,7 @@ import { ArrowRight } from '@element-plus/icons-vue'
 import { ConstraintConfig, PermissionCheckbox } from './components'
 import { useCascadeSelection } from './composables'
 import { InheritState, permissionTableProps } from './types'
+import { applyDefaultInheritState } from './utils'
 
 import type {
   ConstraintConfig as ConstraintConfigType,
@@ -305,6 +306,13 @@ const emit = defineEmits<{
 const dataRef = computed(() => props.data)
 const cascade = useCascadeSelection(dataRef)
 
+// 角色权限集合（标准化为 Set）- 需要在 applyDefaultInheritState 之前定义
+const rolePermissionsSet = computed(() => {
+  if (!props.rolePermissions) return new Set<string>()
+  const value = props.rolePermissions as Set<string> | string[]
+  return value instanceof Set ? value : new Set(value)
+})
+
 // 监听数据变化，重建节点映射
 watch(
   () => props.data,
@@ -314,11 +322,31 @@ watch(
   { immediate: true, deep: true }
 )
 
+// 是否已完成首次初始化（用于 defaultInherit 逻辑）
+// 默认继承只在首次初始化时生效，用户操作后不再覆盖
+const isInitialized = ref(false)
+
 // 监听外部状态变化，初始化内部状态
 watch(
   [() => props.inheritState, () => props.grantedState],
   ([inheritState, grantedState]) => {
-    cascade.initStates(inheritState, grantedState)
+    // 如果启用了 showInherit 和 defaultInherit，且是首次初始化
+    // 为未配置的节点填充默认继承状态
+    let finalInheritState = inheritState
+    if (props.showInherit && props.defaultInherit && !isInitialized.value) {
+      const allNodeIds = Array.from(cascade.nodeMap.value.keys())
+      // 只有当 nodeMap 有内容时才应用默认值并标记已初始化
+      if (allNodeIds.length > 0) {
+        finalInheritState = applyDefaultInheritState(
+          inheritState,
+          allNodeIds,
+          rolePermissionsSet.value
+        )
+        // 标记已初始化，后续用户操作不再应用默认值
+        isInitialized.value = true
+      }
+    }
+    cascade.initStates(finalInheritState, grantedState)
   },
   { immediate: true, deep: true }
 )
@@ -367,13 +395,6 @@ const countRows = (node: PermissionNode): number => {
   }
   return node.children.reduce((sum, child) => sum + countRows(child), 0)
 }
-
-// 角色权限集合（标准化为 Set）
-const rolePermissionsSet = computed(() => {
-  if (!props.rolePermissions) return new Set<string>()
-  const value = props.rolePermissions as Set<string> | string[]
-  return value instanceof Set ? value : new Set(value)
-})
 
 // 计算角色决定的继承状态
 const getRoleInheritState = (id: string): InheritState => {
@@ -628,6 +649,8 @@ const reset = (resetData = false) => {
   expandedLevel1.value = new Set()
   // 清空已渲染状态，下次展开时重新渲染
   renderedLevel1.value = new Set()
+  // 重置初始化标记，下次加载数据时可以重新应用 defaultInherit
+  isInitialized.value = false
 
   // 可选：重置约束配置状态
   if (resetData) {

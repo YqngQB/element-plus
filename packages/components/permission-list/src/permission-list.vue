@@ -146,6 +146,7 @@ import { InheritState } from '@element-plus/components/permission-table'
 import PermissionCheckbox from '../../permission-table/src/components/permission-checkbox.vue'
 import ConstraintConfig from '../../permission-table/src/components/constraint-config.vue'
 import { useCascadeSelection } from '../../permission-table/src/composables'
+import { applyDefaultInheritState } from '../../permission-table/src/utils'
 import { permissionListProps } from './types'
 
 import type { ConstraintType } from '@element-plus/components/permission-table'
@@ -261,6 +262,13 @@ const cascadeData = computed(() => {
 // 使用级联选择 composable（与 permission-table 一致）
 const cascade = useCascadeSelection(cascadeData)
 
+// 角色权限集合（标准化为 Set）- 需要在 applyDefaultInheritState 之前定义
+const rolePermissionsSet = computed(() => {
+  if (!props.rolePermissions) return new Set<string>()
+  const value = props.rolePermissions as Set<string> | string[]
+  return value instanceof Set ? value : new Set(value)
+})
+
 // 监听数据变化，重建节点映射
 watch(
   () => props.data,
@@ -270,11 +278,31 @@ watch(
   { immediate: true, deep: true }
 )
 
+// 是否已完成首次初始化（用于 defaultInherit 逻辑）
+// 默认继承只在首次初始化时生效，用户操作后不再覆盖
+const isInitialized = ref(false)
+
 // 监听外部状态变化，初始化内部状态
 watch(
   [() => props.inheritState, () => props.grantedState],
   ([inheritState, grantedState]) => {
-    cascade.initStates(inheritState, grantedState)
+    // 如果启用了 showInherit 和 defaultInherit，且是首次初始化
+    // 为未配置的节点填充默认继承状态
+    let finalInheritState = inheritState
+    if (props.showInherit && props.defaultInherit && !isInitialized.value) {
+      const allNodeIds = Array.from(cascade.nodeMap.value.keys())
+      // 只有当 nodeMap 有内容时才应用默认值并标记已初始化
+      if (allNodeIds.length > 0) {
+        finalInheritState = applyDefaultInheritState(
+          inheritState,
+          allNodeIds,
+          rolePermissionsSet.value
+        )
+        // 标记已初始化，后续用户操作不再应用默认值
+        isInitialized.value = true
+      }
+    }
+    cascade.initStates(finalInheritState, grantedState)
   },
   { immediate: true, deep: true }
 )
@@ -290,13 +318,6 @@ watch(
   },
   { immediate: true, deep: true }
 )
-
-// 角色权限集合
-const rolePermissionsSet = computed(() => {
-  if (!props.rolePermissions) return new Set<string>()
-  const value = props.rolePermissions as Set<string> | string[]
-  return value instanceof Set ? value : new Set(value)
-})
 
 // 获取继承状态
 const getInheritState = (id: string): InheritState => {
@@ -481,6 +502,8 @@ const reset = () => {
   constraintStateMap.value = {}
   scrollTop.value = 0
   scrollbarRef.value?.setScrollTop(0)
+  // 重置初始化标记，下次加载数据时可以重新应用 defaultInherit
+  isInitialized.value = false
 }
 
 // 滚动到指定索引

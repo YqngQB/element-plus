@@ -21,6 +21,8 @@ export interface NodeInfo {
   level: number
   // 该节点自身的权限ID
   permissionIds: string[]
+  // 约束类型（仅权限项有值）
+  constraintType?: string
 }
 
 /**
@@ -76,6 +78,7 @@ export function useCascadeSelection(
               ancestorIds: [...ancestorIds, nodeId],
               level: level + 1,
               permissionIds: [],
+              constraintType: perm.constraintType, // 保存约束类型
             })
           }
         }
@@ -278,9 +281,14 @@ export function useCascadeSelection(
     // 2. 向下级联
     const descendants = nodeInfo.descendantIds
     if (granted) {
-      // 勾选时：只设置没有继承状态的后代
+      // 勾选时：只设置没有继承状态且没有约束的后代
+      // 跳过有约束的权限项，因为约束值需要用户手动配置
       for (const descId of descendants) {
-        if ((inheritStatesRef.get(descId) ?? 0) === 0) {
+        const descNodeInfo = nodeMap.value.get(descId)
+        const hasConstraint =
+          descNodeInfo?.constraintType && descNodeInfo.constraintType !== 'none'
+        // 排除：1. 有继承状态的 2. 有约束的权限项
+        if ((inheritStatesRef.get(descId) ?? 0) === 0 && !hasConstraint) {
           newGrantedStates.set(descId, granted)
         }
       }
