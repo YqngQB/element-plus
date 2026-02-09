@@ -21,7 +21,7 @@ export interface AuthorizationInfoModel {
   authorizationType?: number
   /** 权限项值（用户选择的枚举值） */
   authorizationItemValues?: (number | string | Record<string, any>)[]
-  /** 是否继承（0不继承，1继承，-1无权限） */
+  /** 是否继承（-1=不继承且无权限, 0=不继承且有权限, 1=继承） */
   isExtendPermission?: number
 }
 
@@ -31,7 +31,7 @@ export interface AuthorizationInfoModel {
 export interface RouteInfoModel {
   /** 页面路由uid */
   sysRouteUid: string
-  /** 是否继承（0不继承，1继承，-1无权限） */
+  /** 是否继承（-1=不继承且无权限, 0=不继承且有权限, 1=继承） */
   isExtendPermission: number
 }
 
@@ -54,7 +54,7 @@ export interface RolePermissionData {
   pageAuthorizations?: {
     /** 路由id */
     routeUid?: string
-    /** 是否继承 (0不继承，1继承，-1无权限) */
+    /** 是否继承 (-1=不继承且无权限, 0=不继承且有权限, 1=继承) */
     isExtendPermission?: number
     /** 已拥有的权限详情 */
     authorizationInfos?: AuthorizationInfoModel[]
@@ -176,12 +176,12 @@ export class PermissionAdapter {
           inheritState[permId] = hasRolePerm ? 1 : 2 // GRANTED : DENIED
           grantedState[permId] = false // 继承时不设置授权状态
         } else if (isExtendPermission === 0) {
-          // 用户不继承，使用自己的权限设置
+          // 用户不继承，使用自己的权限设置（有权限）
           inheritState[permId] = 0 // NONE
           grantedState[permId] = true
         } else {
-          // isExtendPermission === -1，无权限
-          inheritState[permId] = 2 // DENIED
+          // isExtendPermission === -1，不继承且无权限
+          inheritState[permId] = 0 // NONE
           grantedState[permId] = false
         }
 
@@ -207,12 +207,12 @@ export class PermissionAdapter {
           inheritState[route.sysRouteUid] = hasRoleRoute ? 1 : 2 // GRANTED : DENIED
           grantedState[route.sysRouteUid] = false
         } else if (isExtendPermission === 0) {
-          // 用户不继承，使用自己的权限设置
+          // 用户不继承，使用自己的权限设置（有权限）
           inheritState[route.sysRouteUid] = 0 // NONE
           grantedState[route.sysRouteUid] = true
         } else {
-          // isExtendPermission === -1，无权限
-          inheritState[route.sysRouteUid] = 2 // DENIED
+          // isExtendPermission === -1，不继承且无权限
+          inheritState[route.sysRouteUid] = 0 // NONE
           grantedState[route.sysRouteUid] = false
         }
       })
@@ -274,7 +274,7 @@ export class PermissionAdapter {
    * @param id 权限或节点ID
    * @param inheritState 继承状态映射
    * @param grantedState 授权状态映射
-   * @returns 0=不继承, 1=继承, -1=无权限
+   * @returns -1=不继承且无权限, 0=不继承且有权限, 1=继承
    */
   private getIsExtendPermission(
     id: string,
@@ -284,7 +284,7 @@ export class PermissionAdapter {
     const inherit = inheritState[id]
     const granted = grantedState[id]
 
-    // 如果状态都未设置，视为无权限
+    // 如果状态都未设置，视为无权限（不继承且无权限）
     if (inherit === undefined && granted === undefined) {
       return -1
     }
@@ -294,8 +294,10 @@ export class PermissionAdapter {
       return 1
     }
 
-    // 不继承
-    return 0
+    // 不继承：根据 granted 状态判断
+    // granted=true → 0 (不继承且有权限)
+    // granted=false → -1 (不继承且无权限)
+    return granted ? 0 : -1
   }
 
   /**

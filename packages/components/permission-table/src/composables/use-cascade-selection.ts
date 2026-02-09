@@ -224,7 +224,17 @@ export function useCascadeSelection(
         // 只有当祖先是"不继承+未勾选"状态时，才设置为继承状态
         // 如果祖先已经是"继承"或"不继承+已勾选"，则不处理（已经可访问）
         if (ancestorInherit === 0 && !newGrantedStates.get(ancestorId)) {
-          newStates.set(ancestorId, state)
+          // 根据角色权限设置祖先的继承状态
+          if (rolePermissions) {
+            // 根据角色是否拥有该祖先权限，设置对应的继承状态
+            const ancestorState = rolePermissions.has(ancestorId)
+              ? 1 // InheritState.GRANTED
+              : 2 // InheritState.DENIED
+            newStates.set(ancestorId, ancestorState)
+          } else {
+            // 未提供角色权限时，统一设置为当前节点的状态
+            newStates.set(ancestorId, state)
+          }
         }
       }
     }
