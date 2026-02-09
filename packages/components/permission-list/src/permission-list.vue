@@ -289,6 +289,8 @@ watch(
     // 如果启用了 showInherit 和 defaultInherit，且是首次初始化
     // 为未配置的节点填充默认继承状态
     let finalInheritState = inheritState
+    let stateChanged = false
+
     if (props.showInherit && props.defaultInherit && !isInitialized.value) {
       const allNodeIds = Array.from(cascade.nodeMap.value.keys())
       // 只有当 nodeMap 有内容时才应用默认值并标记已初始化
@@ -298,11 +300,18 @@ watch(
           allNodeIds,
           rolePermissionsSet.value
         )
+        stateChanged = finalInheritState !== inheritState
         // 标记已初始化，后续用户操作不再应用默认值
         isInitialized.value = true
       }
     }
+
     cascade.initStates(finalInheritState, grantedState)
+
+    // 如果 defaultInherit 修改了状态，同步给父组件
+    if (stateChanged) {
+      emit('update:inheritState', finalInheritState)
+    }
   },
   { immediate: true, deep: true }
 )
