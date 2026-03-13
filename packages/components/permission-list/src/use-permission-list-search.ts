@@ -58,7 +58,14 @@ function escapeRegExp(str: string): string {
  */
 export function usePermissionListSearch(
   data: Ref<DialogPermissionItem[]> | ComputedRef<DialogPermissionItem[]>,
-  scrollToIndex: (index: number) => void
+  scrollToIndex: (index: number) => void,
+  options?: {
+    /**
+     * 额外文本提取函数：从每条数据提取搜索用的附加文本（如插槽列字段）
+     * 返回空字符串表示该行无附加可搜索内容
+     */
+    extraSearchText?: (item: DialogPermissionItem) => string
+  }
 ): UsePermissionListSearchReturn {
   const searchKeyword = ref('')
   const currentMatchIndex = ref(-1)
@@ -74,7 +81,10 @@ export function usePermissionListSearch(
     data.value.forEach((item, index) => {
       const labelMatch = regex.test(item.label)
       const permMatch = item.permissions?.some((p) => regex.test(p.label))
-      if (labelMatch || permMatch) {
+      const extraMatch = options?.extraSearchText
+        ? regex.test(options.extraSearchText(item))
+        : false
+      if (labelMatch || permMatch || extraMatch) {
         result.push(index)
       }
     })
@@ -85,7 +95,15 @@ export function usePermissionListSearch(
   const matchCount = computed(() => matchedRowIndices.value.length)
 
   // 关键词或数据变化时，重置游标但保留关键词（数据更新后重新定位到第一个匹配）
+  // 对比实际内容：避免 searchExtractor 等非稳定依赖导致 computed 重跑后误重置游标
+  let prevIndices: number[] = []
   watch(matchedRowIndices, (indices) => {
+    const same =
+      indices.length === prevIndices.length &&
+      indices.every((v, i) => v === prevIndices[i])
+    prevIndices = indices
+    if (same) return
+
     if (indices.length > 0) {
       currentMatchIndex.value = 0
       scrollToIndex(indices[0])

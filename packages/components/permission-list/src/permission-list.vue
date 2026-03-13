@@ -111,7 +111,12 @@
             :class="[ns.e('cell'), ns.em('cell', 'extra-before')]"
             :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
           >
-            <slot name="extra-cell" :item="item.data" :index="item.index" />
+            <slot
+              name="extra-cell"
+              :item="item.data"
+              :index="item.index"
+              :split-highlight="splitHighlight"
+            />
           </div>
 
           <!-- 权限列 -->
@@ -178,7 +183,12 @@
             :class="[ns.e('cell'), ns.em('cell', 'extra')]"
             :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
           >
-            <slot name="extra-cell" :item="item.data" :index="item.index" />
+            <slot
+              name="extra-cell"
+              :item="item.data"
+              :index="item.index"
+              :split-highlight="splitHighlight"
+            />
           </div>
         </div>
       </div>
@@ -595,7 +605,8 @@ const {
   splitHighlight,
 } = usePermissionListSearch(
   computed(() => props.data),
-  scrollToIndex
+  scrollToIndex,
+  { extraSearchText: (item) => props.searchExtractor?.(item) ?? '' }
 )
 
 // 监听容器尺寸变化（支持百分比高度）
@@ -638,6 +649,8 @@ defineExpose({
   prevMatch,
   /** 清除搜索 */
   clearSearch,
+  /** 将文本按关键词拆分为高亮分段 */
+  splitHighlight,
   /** 当前搜索关键词 */
   searchKeyword,
   /** 匹配的行索引列表 */

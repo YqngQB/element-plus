@@ -92,6 +92,15 @@ export const permissionListProps = {
     default: 5,
   },
   /**
+   * 额外搜索文本提取函数，用于将插槽列的数据字段纳入搜索范围
+   * 返回该行额外的可搜索文本；配合 splitHighlight（通过 ref 调用）可在插槽内高亮
+   * @example :search-extractor="(item) => item.description ?? ''"
+   */
+  searchExtractor: {
+    type: Function as PropType<(item: DialogPermissionItem) => string>,
+    default: undefined,
+  },
+  /**
    * 额外列配置，仅在提供 #extra-header / #extra-cell slot 时生效
    * - width: 列宽，Number 为 px，String 可传 CSS 值（如 '20%'），默认 200
    * - order: 显示位置，'before-permissions' 在权限列左侧，'after-permissions' 在右侧（默认）
