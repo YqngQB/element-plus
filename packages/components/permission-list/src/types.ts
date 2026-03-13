@@ -91,6 +91,18 @@ export const permissionListProps = {
     type: Number,
     default: 5,
   },
+  /**
+   * 额外列配置，仅在提供 #extra-header / #extra-cell slot 时生效
+   * - width: 列宽，Number 为 px，String 可传 CSS 值（如 '20%'），默认 200
+   * - order: 显示位置，'before-permissions' 在权限列左侧，'after-permissions' 在右侧（默认）
+   */
+  extraColumn: {
+    type: Object as PropType<{
+      width?: number | string
+      order?: 'before-permissions' | 'after-permissions'
+    }>,
+    default: () => ({}),
+  },
 }
 
 export type PermissionListProps = ExtractPropTypes<typeof permissionListProps>

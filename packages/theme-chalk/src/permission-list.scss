@@ -68,6 +68,29 @@
       border-right: 1px solid getCssVar('border-color', 'lighter');
       flex-shrink: 0; // 防止第一列被压缩
     }
+
+    // 额外列修饰符：after-permissions —— 左边框将其与权限列分隔
+    @include m(extra) {
+      border-left: 1px solid getCssVar('border-color', 'lighter');
+    }
+
+    // 额外列修饰符：before-permissions —— 右边框将其与权限列分隔（名称列已有 border-right）
+    @include m(extra-before) {
+      border-right: 1px solid getCssVar('border-color', 'lighter');
+    }
+  }
+
+  // 表头单元格
+  @include e(header-cell) {
+    // 额外列表头修饰符：after-permissions
+    @include m(extra) {
+      border-left: 1px solid getCssVar('border-color', 'lighter');
+    }
+
+    // 额外列表头修饰符：before-permissions
+    @include m(extra-before) {
+      border-right: 1px solid getCssVar('border-color', 'lighter');
+    }
   }
 
   // 权限容器 - 横向滚动由 el-scrollbar 处理
@@ -95,6 +118,15 @@
   // 空权限占位
   @include e(empty-perm) {
     color: getCssVar('text-color', 'placeholder');
+  }
+
+  // 搜索关键词高亮
+  @include e(highlight) {
+    background-color: getCssVar('color', 'warning-light-5');
+    color: getCssVar('color', 'warning-dark-2');
+    border-radius: 2px;
+    padding: 0 1px;
+    font-style: normal; // 覆盖 <mark> 默认样式
   }
 
   // 空状态

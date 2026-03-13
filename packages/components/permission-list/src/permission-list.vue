@@ -27,7 +27,25 @@
           全选
         </el-checkbox>
       </div>
+      <!-- 额外列表头：before-permissions 位置 -->
+      <div
+        v-if="($slots['extra-header'] || $slots['extra-cell']) && isExtraBefore"
+        :class="[ns.e('header-cell'), ns.em('header-cell', 'extra-before')]"
+        :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
+      >
+        <slot name="extra-header" />
+      </div>
       <div :class="ns.e('header-cell')" style="flex: 1">权限配置</div>
+      <!-- 额外列表头：after-permissions 位置（默认） -->
+      <div
+        v-if="
+          ($slots['extra-header'] || $slots['extra-cell']) && !isExtraBefore
+        "
+        :class="[ns.e('header-cell'), ns.em('header-cell', 'extra')]"
+        :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
+      >
+        <slot name="extra-header" />
+      </div>
     </div>
 
     <!-- 虚拟滚动容器 -->
@@ -72,8 +90,28 @@
               </template>
             </permission-checkbox>
             <span class="el-permission-table__label">
-              {{ item.data.label }}
+              <template
+                v-for="(part, pi) in splitHighlight(item.data.label)"
+                :key="pi"
+              >
+                <mark v-if="part.highlighted" :class="ns.e('highlight')">{{
+                  part.text
+                }}</mark>
+                <span v-else>{{ part.text }}</span>
+              </template>
             </span>
+          </div>
+
+          <!-- 额外列
+              ：before-permissions 位置 -->
+          <div
+            v-if="
+              ($slots['extra-header'] || $slots['extra-cell']) && isExtraBefore
+            "
+            :class="[ns.e('cell'), ns.em('cell', 'extra-before')]"
+            :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
+          >
+            <slot name="extra-cell" :item="item.data" :index="item.index" />
           </div>
 
           <!-- 权限列 -->
@@ -131,6 +169,17 @@
               </div>
             </el-scrollbar>
           </div>
+
+          <!-- 额外列：after-permissions 位置（默认），由调用方通过 #extra-cell slot 提供 -->
+          <div
+            v-if="
+              ($slots['extra-header'] || $slots['extra-cell']) && !isExtraBefore
+            "
+            :class="[ns.e('cell'), ns.em('cell', 'extra')]"
+            :style="{ width: extraColumnWidthStyle, flexShrink: 0 }"
+          >
+            <slot name="extra-cell" :item="item.data" :index="item.index" />
+          </div>
         </div>
       </div>
     </el-scrollbar>
@@ -148,6 +197,7 @@ import ConstraintConfig from '../../permission-table/src/components/constraint-c
 import { useCascadeSelection } from '../../permission-table/src/composables'
 import { applyDefaultInheritState } from '../../permission-table/src/utils'
 import { permissionListProps } from './types'
+import { usePermissionListSearch } from './use-permission-list-search'
 
 import type { ConstraintType } from '@element-plus/components/permission-table'
 import type {
@@ -176,6 +226,17 @@ const emit = defineEmits<{
 }>()
 
 const ns = useNamespace('permission-list')
+
+// 额外列宽度 CSS 值（内部计算，统一转为字符串）
+const extraColumnWidthStyle = computed(() => {
+  const w = props.extraColumn.width ?? 200
+  return typeof w === 'number' ? `${w}px` : w
+})
+
+// 额外列是否在权限列之前显示
+const isExtraBefore = computed(
+  () => props.extraColumn.order === 'before-permissions'
+)
 
 // 滚动容器引用
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
@@ -521,6 +582,22 @@ const scrollToIndex = (index: number) => {
   scrollbarRef.value?.setScrollTop(index * props.itemHeight)
 }
 
+// ========== 搜索 ==========
+const {
+  searchKeyword,
+  matchedRowIndices,
+  currentMatchIndex: searchCurrentIndex,
+  matchCount: searchMatchCount,
+  search,
+  nextMatch,
+  prevMatch,
+  clearSearch,
+  splitHighlight,
+} = usePermissionListSearch(
+  computed(() => props.data),
+  scrollToIndex
+)
+
 // 监听容器尺寸变化（支持百分比高度）
 let resizeObserver: ResizeObserver | null = null
 
@@ -552,7 +629,25 @@ onUnmounted(() => {
 })
 
 defineExpose({
-  // 重置和滚动控制
+  // ---- 搜索 API ----
+  /** 执行搜索：设置关键词并跳转到第一个匹配行 */
+  search,
+  /** 跳转到下一个匹配行（环形） */
+  nextMatch,
+  /** 跳转到上一个匹配行（环形） */
+  prevMatch,
+  /** 清除搜索 */
+  clearSearch,
+  /** 当前搜索关键词 */
+  searchKeyword,
+  /** 匹配的行索引列表 */
+  matchedRowIndices,
+  /** 当前导航游标 */
+  searchCurrentIndex,
+  /** 匹配总数 */
+  searchMatchCount,
+
+  // ---- 重置和滚动控制 ----
   reset,
   scrollToIndex,
   scrollTop,
