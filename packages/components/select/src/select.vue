@@ -536,6 +536,7 @@ export default defineComponent({
         handleOptionSelect: API.handleOptionSelect,
         onOptionCreate: API.onOptionCreate,
         onOptionDestroy: API.onOptionDestroy,
+        initializeCachedOptions: API.initializeCachedOptions,
         // __________
         deleteTag: API.deleteTag,
         selectDisabled: API.selectDisabled,

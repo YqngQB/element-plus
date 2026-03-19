@@ -26,6 +26,7 @@ export interface SelectContext {
   selectDisabled: boolean
   getValueKey: (item: OptionPublicInstance | OptionBasic) => any
   collapseTagSize: 'small' | 'default'
+  initializeCachedOptions(items: CachedOptionItem[]): void
 }
 export type SelectStates = {
   inputValue: string
@@ -78,4 +79,8 @@ export type OptionBasic = {
   value: OptionValue
   currentLabel: OptionPublicInstance['currentLabel']
   isDisabled?: OptionPublicInstance['isDisabled']
+}
+export type CachedOptionItem = {
+  value: OptionValue
+  label?: string | number
 }

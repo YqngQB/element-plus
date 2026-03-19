@@ -24,4 +24,5 @@ export type {
   SelectContext,
   OptionPublicInstance as SelectOptionProxy,
   OptionBasic,
+  CachedOptionItem as SelectCachedOptionItem,
 } from './src/type'

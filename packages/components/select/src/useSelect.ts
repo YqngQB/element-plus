@@ -52,6 +52,7 @@ import type { TooltipInstance } from '@element-plus/components/tooltip'
 import type { ScrollbarInstance } from '@element-plus/components/scrollbar'
 import type { SelectEmits, SelectProps } from './select'
 import type {
+  CachedOptionItem,
   OptionBasic,
   OptionPublicInstance,
   OptionValue,
@@ -650,6 +651,59 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
     }
   }
 
+  /**
+   * Initialize cachedOptions with a list of plain items.
+   * Useful when the initial model value has labels that are not yet represented
+   * in the rendered option list (e.g. remote search on page load).
+   *
+   * Only inserts entries that are not already present in cachedOptions, so
+   * real mounted ElOption instances are never overwritten.
+   *
+   * The same "keep if selected" protection that applies to real options also
+   * applies here automatically: because the virtual object is a plain object
+   * (not a Vue component instance), the identity check
+   * `cachedOptions.get(key) === vm` in ElOption's onBeforeUnmount will never
+   * match it, so a real option unmounting will not evict our virtual entry
+   * when the value is selected.
+   */
+  const initializeCachedOptions = (items: CachedOptionItem[]) => {
+    // For object values with valueKey, Map key lookup is reference-based,
+    // so we must use a valueKey-aware existence check to avoid duplicate entries.
+    const hasCachedByValueKey = (value: OptionValue): boolean => {
+      if (!isPlainObject(value)) return states.cachedOptions.has(value)
+      const keyVal = get(value, props.valueKey)
+      for (const cached of states.cachedOptions.values()) {
+        if (get(cached.value, props.valueKey) === keyVal) return true
+      }
+      return false
+    }
+
+    // When modelValue contains the same logical object, prefer its reference as
+    // the Map key so that cachedOptions.get(it) lookups (e.g. getLastNotDisabledIndex)
+    // can find the virtual entry correctly.
+    const modelValues = ensureArray(props.modelValue)
+
+    items.forEach((item) => {
+      if (hasCachedByValueKey(item.value)) return
+      const label =
+        item.label ?? (isObject(item.value) ? '' : (item.value ?? ''))
+      const virtualOption = {
+        value: item.value,
+        currentLabel: label,
+        isDisabled: false,
+        disabled: false,
+        states: { groupDisabled: false },
+      } as unknown as OptionPublicInstance
+      const mapKey = isPlainObject(item.value)
+        ? (modelValues.find(
+            (v) => get(v, props.valueKey) === get(item.value, props.valueKey)
+          ) ?? item.value)
+        : item.value
+      states.cachedOptions.set(mapKey, virtualOption)
+    })
+    setSelected()
+  }
+
   const popperRef = computed(() => {
     return tooltipRef.value?.popperRef?.contentRef
   })
@@ -966,6 +1020,7 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
     handleKeydown,
     onOptionCreate,
     onOptionDestroy,
+    initializeCachedOptions,
     handleMenuEnter,
     focus,
     blur,
