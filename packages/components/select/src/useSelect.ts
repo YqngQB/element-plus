@@ -826,19 +826,20 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
       return
 
     if (!optionsAllDisabled.value) {
+      const optLen = optionsArray.value.length
       if (direction === 'next') {
         states.hoveringIndex++
-        if (states.hoveringIndex === states.options.size) {
+        if (states.hoveringIndex >= optLen) {
           states.hoveringIndex = 0
         }
       } else if (direction === 'prev') {
         states.hoveringIndex--
         if (states.hoveringIndex < 0) {
-          states.hoveringIndex = states.options.size - 1
+          states.hoveringIndex = optLen - 1
         }
       }
       const option = optionsArray.value[states.hoveringIndex]
-      if (option.isDisabled || !option.visible) {
+      if (option && (option.isDisabled || !option.visible)) {
         navigateOptions(direction)
       }
       nextTick(() => scrollToOption(hoverOption.value))
