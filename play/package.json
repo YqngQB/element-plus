@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
-    "vue": "catalog:"
+    "vue": "catalog:",
+    "vxe-pc-ui": "4.13.16",
+    "vxe-table": "4.18.9",
+    "xe-utils": "4.0.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

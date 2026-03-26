@@ -7,6 +7,12 @@ import '@element-plus/theme-chalk/src/message.scss'
 import '@element-plus/components/permission-table/style'
 import '@element-plus/components/permission-list/style'
 
+import VxeUIBase from 'vxe-pc-ui'
+import 'vxe-pc-ui/es/style.css'
+
+import VxeUITable from 'vxe-table'
+import 'vxe-table/es/style.css'
+
 // #21498
 window.addEventListener('error', (e: ErrorEvent) => {
   console.error(`%c${e.message}`, 'color: #e74c3c; font-weight: bold;')
@@ -36,5 +42,5 @@ window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
   const App = (await file()).default
   const app = createApp(App)
 
-  app.mount('#play')
+  app.use(VxeUIBase).use(VxeUITable).mount('#play')
 })()
