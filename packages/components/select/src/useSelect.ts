@@ -254,7 +254,9 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
         (props.loading ||
           !isRemoteSearchEmpty.value ||
           (props.remote && !!slots.empty)) &&
-        (!debouncing.value || !isEmpty(states.previousQuery))
+        (!debouncing.value ||
+          !isEmpty(states.previousQuery) ||
+          states.options.size > 0)
       )
     },
     set(val: boolean) {
@@ -314,6 +316,7 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
         states.inputValue = ''
         states.previousQuery = null
         states.isBeforeHide = true
+        states.menuVisibleOnFocus = false
       }
     }
   )
@@ -586,7 +589,7 @@ export const useSelect = (props: SelectProps, emit: SelectEmits) => {
       if (option.created) {
         handleQueryChange('')
       }
-      if (props.filterable && !props.reserveKeyword) {
+      if (props.filterable && (option.created || !props.reserveKeyword)) {
         states.inputValue = ''
       }
     } else {

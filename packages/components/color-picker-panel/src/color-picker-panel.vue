@@ -6,10 +6,11 @@
     <div :class="ns.e('wrapper')">
       <hue-slider
         ref="hueRef"
-        class="hue-slider"
         :color="color"
         vertical
         :disabled="disabled"
+        :class="['hue-slider', hueSliderClass]"
+        :style="hueSliderStyle"
       />
       <sv-panel ref="svRef" :color="color" :disabled="disabled" />
     </div>
@@ -56,16 +57,21 @@ import {
   ROOT_COMMON_COLOR_INJECTION_KEY,
   colorPickerPanelContextKey,
   colorPickerPanelEmits,
-  colorPickerPanelProps,
 } from './color-picker-panel'
 import { useCommonColor } from './composables/use-common-color'
 
+import type { ColorPickerPanelProps } from './color-picker-panel'
 import type { InputInstance } from '@element-plus/components/input'
 
 defineOptions({
   name: 'ElColorPickerPanel',
 })
-const props = defineProps(colorPickerPanelProps)
+const props = withDefaults(defineProps<ColorPickerPanelProps>(), {
+  modelValue: undefined,
+  border: true,
+  validateEvent: true,
+  showAlpha: false,
+})
 const emit = defineEmits(colorPickerPanelEmits)
 
 const ns = useNamespace('color-picker-panel')

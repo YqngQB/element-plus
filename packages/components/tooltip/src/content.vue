@@ -57,9 +57,10 @@ import {
 import { ElPopperContent } from '@element-plus/components/popper'
 import ElTeleport from '@element-plus/components/teleport'
 import { TOOLTIP_INJECTION_KEY } from './constants'
-import { useTooltipContentProps } from './content'
 import { isTriggerType } from './utils'
+import { useTooltipContentPropsDefaults } from './content'
 
+import type { ElTooltipContentProps } from './content'
 import type { PopperContentInstance } from '@element-plus/components/popper'
 
 defineOptions({
@@ -67,7 +68,10 @@ defineOptions({
   inheritAttrs: false,
 })
 
-const props = defineProps(useTooltipContentProps)
+const props = withDefaults(
+  defineProps<ElTooltipContentProps>(),
+  useTooltipContentPropsDefaults
+)
 
 const { selector } = usePopperContainerId()
 const ns = useNamespace('tooltip')
@@ -194,13 +198,6 @@ watch(
   },
   {
     flush: 'post',
-  }
-)
-
-watch(
-  () => props.content,
-  () => {
-    contentRef.value?.updatePopper?.()
   }
 )
 

@@ -144,13 +144,13 @@ upload/manual
 
 ### Exposes
 
-| Name         | Description                                                                                            | Type                                                                              |
-| ------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| abort        | cancel upload request.                                                                                 | ^[Function]`(file: UploadFile) => void`                                           |
-| submit       | upload the file list manually.                                                                         | ^[Function]`() => void`                                                           |
-| clearFiles   | clear the file list (this method is not supported in the `before-upload` hook).                        | ^[Function]`(status?: UploadStatus[]) => void`                                    |
-| handleStart  | select the file manually.                                                                              | ^[Function]`(rawFile: UploadRawFile) => void`                                     |
-| handleRemove | remove the file manually. `file` and `rawFile` has been merged. `rawFile` will be removed in `v2.2.0`. | ^[Function]`(file: UploadFile \| UploadRawFile, rawFile?: UploadRawFile) => void` |
+| Name         | Description                                                                                                                                      | Type                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| abort        | cancel upload request. When a `file` is specified, abort the corresponding pending upload; when no file is specified, abort all pending uploads. | ^[Function]`(file?: UploadFile) => void`                                          |
+| submit       | upload the file list manually.                                                                                                                   | ^[Function]`() => void`                                                           |
+| clearFiles   | clear the file list (this method is not supported in the `before-upload` hook).                                                                  | ^[Function]`(status?: UploadStatus[]) => void`                                    |
+| handleStart  | select the file manually.                                                                                                                        | ^[Function]`(rawFile: UploadRawFile) => void`                                     |
+| handleRemove | remove the file manually. `file` and `rawFile` has been merged. `rawFile` will be removed in `v2.2.0`.                                           | ^[Function]`(file: UploadFile \| UploadRawFile, rawFile?: UploadRawFile) => void` |
 
 ## Type Declarations
 
@@ -192,7 +192,7 @@ interface UploadRawFile extends File {
 interface UploadRequestOptions {
   action: string
   method: string
-  data: Record<string, string | Blob | [string | Blob, string]>
+  data: Record<string, string | Blob | [string | Blob, string] | string[]>
   filename: string
   file: UploadRawFile
   headers: Headers | Record<string, string | number | null | undefined>
