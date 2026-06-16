@@ -694,6 +694,15 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.25(typescript@5.5.4)
+      vxe-pc-ui:
+        specifier: 4.13.16
+        version: 4.13.16(vue@3.5.25(typescript@5.5.4))
+      vxe-table:
+        specifier: 4.18.9
+        version: 4.18.9(vue@3.5.25(typescript@5.5.4))
+      xe-utils:
+        specifier: 4.0.4
+        version: 4.0.4
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
@@ -3224,6 +3233,11 @@ packages:
   '@vueuse/shared@12.8.2':
     resolution: {integrity: sha512-dznP38YzxZoNloI0qpEfpkms8knDtaoQ6Y/sfS0L7Yki4zh40LFHEhur0odJC6xTHG5dxWVPiUWBXn+wCG2s5w==}
 
+  '@vxe-ui/core@4.4.14':
+    resolution: {integrity: sha512-bEMnvZl+R39+midxlz0vcpWS/w4WsdN9bOfjxWIfz7o95FyxOQWUjHs63IT9wNeUP09WhLkmUDKKjdl7BQYUMw==}
+    peerDependencies:
+      vue: ^3.2.0
+
   '@yarnpkg/core@4.0.0-rc.14':
     resolution: {integrity: sha512-SWq+T56I7GiRMrMECGsvCJvQmbXi+pBexjX9sYICPj+OgTHbWDmIOh/OrSC8honE6WEE2ZzPNmwF4Y355NKgew==}
     engines: {node: '>=14.15.0'}
@@ -4202,7 +4216,7 @@ packages:
     engines: {node: '>=8'}
 
   detect-libc@1.0.3:
-    resolution: {integrity: sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==}
+    resolution: {integrity: sha1-+hN8S9aY7fVc1c0CrFWfkaTEups=}
     engines: {node: '>=0.10'}
     hasBin: true
 
@@ -4234,6 +4248,9 @@ packages:
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
+
+  dom-zindex@1.0.7:
+    resolution: {integrity: sha512-cKU/h8v8IPBgdZOTPbPmq3Ib+Ac5C+kKoh9I4LbGR9BM3GwbmB16KYWKJcj5M2BavnA66EbgYzxYDLd1IytnlQ==}
 
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
@@ -8054,6 +8071,12 @@ packages:
       typescript:
         optional: true
 
+  vxe-pc-ui@4.13.16:
+    resolution: {integrity: sha512-SpQI+XvXdmDuyhVb+YIKwsJZNKMte67YE/QddjIcMhsGjUBvfw6fEFXHgPJBjCk2XrlCK5uw4IQBvJq9zS3jow==}
+
+  vxe-table@4.18.9:
+    resolution: {integrity: sha512-OfIIB80kzHufH7+WnzPT8TpWPOWBJL205JX56jcD8jJIKpByVf4TJIMCkEUjE22iJ8zostm2JWDOBJbwhBZDdw==}
+
   w3c-hr-time@1.0.2:
     resolution: {integrity: sha512-z8P5DvDNjKDoFIHK7q8r8lackT6l+jo/Ye3HOle7l9nICP9lf1Ci25fy9vHd0JOWewkIFzXIEig3TdKT7JQ5fQ==}
     deprecated: Use your platform's native performance.now() and performance.timeOrigin.
@@ -8203,6 +8226,12 @@ packages:
   wsl-utils@0.1.0:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
+
+  xe-utils@4.0.4:
+    resolution: {integrity: sha512-1IUuTZRHa5w88Y3kEf0O4Y/99O0hIdh5o8EXqmgqyhY3MaT1xWZgS5iuD7pys6v+9JrJOzECb07+6gxRahDsyw==}
+
+  xe-utils@4.0.9:
+    resolution: {integrity: sha512-LLO3Otzg2i9ArUoBdsjse9Tw7cwE0XvvoP98IMjoqL8l4UELO/a8c041Mq9cAfaUdd6ksamSvGF5luZkwVArqw==}
 
   xml-name-validator@3.0.0:
     resolution: {integrity: sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==}
@@ -11269,6 +11298,12 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
+  '@vxe-ui/core@4.4.14(vue@3.5.25(typescript@5.5.4))':
+    dependencies:
+      dom-zindex: 1.0.7
+      vue: 3.5.25(typescript@5.5.4)
+      xe-utils: 4.0.9
+
   '@yarnpkg/core@4.0.0-rc.14(typanion@3.14.0)':
     dependencies:
       '@arcanis/slice-ansi': 1.1.1
@@ -12383,6 +12418,8 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
       entities: 4.5.0
+
+  dom-zindex@1.0.7: {}
 
   domelementtype@2.3.0: {}
 
@@ -16827,6 +16864,18 @@ snapshots:
     optionalDependencies:
       typescript: 5.5.4
 
+  vxe-pc-ui@4.13.16(vue@3.5.25(typescript@5.5.4)):
+    dependencies:
+      '@vxe-ui/core': 4.4.14(vue@3.5.25(typescript@5.5.4))
+    transitivePeerDependencies:
+      - vue
+
+  vxe-table@4.18.9(vue@3.5.25(typescript@5.5.4)):
+    dependencies:
+      vxe-pc-ui: 4.13.16(vue@3.5.25(typescript@5.5.4))
+    transitivePeerDependencies:
+      - vue
+
   w3c-hr-time@1.0.2:
     dependencies:
       browser-process-hrtime: 1.0.0
@@ -16982,6 +17031,10 @@ snapshots:
   wsl-utils@0.1.0:
     dependencies:
       is-wsl: 3.1.0
+
+  xe-utils@4.0.4: {}
+
+  xe-utils@4.0.9: {}
 
   xml-name-validator@3.0.0: {}
 
