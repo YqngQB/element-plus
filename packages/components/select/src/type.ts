@@ -63,8 +63,10 @@ export interface OptionExposed {
   states: OptionStates
   select: SelectContext
   hoverItem: () => void
+  handleMousedown: (event: MouseEvent) => void
   updateOption: (query: string) => void
   selectOptionClick: () => void
+  mouseMoveEventName: 'mousemove' | null
 }
 export type OptionPublicInstance = ComponentPublicInstance<
   OptionProps,
