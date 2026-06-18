@@ -557,7 +557,7 @@ const getConstraintValue = (id: string): ConstraintConfigType | undefined => {
 const handleConstraintChange = (
   id: string,
   constraintType: ConstraintType,
-  value: string | number | (string | number)[] | undefined
+  value: ConstraintConfigType['enumValue'] | undefined
 ) => {
   constraintStateMap.value[id] = {
     type: constraintType,

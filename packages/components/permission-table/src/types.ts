@@ -95,8 +95,13 @@ export interface PermissionDefinition {
 export interface ConstraintConfig {
   /** 约束类型 */
   type: ConstraintType
-  /** ENUM类型的值（单选为 string/number，多选为数组） */
-  enumValue?: string | number | (number | string | Record<string, any>)[]
+  /** ENUM类型的值（单选为基础值/对象，多选为数组） */
+  enumValue?:
+    | string
+    | number
+    | boolean
+    | Record<string, any>
+    | (number | string | boolean | Record<string, any>)[]
   /** USER_SELECT类型的用户ID列表（预留） */
   // userIds?: string[]
   /** ROLE_SELECT类型的角色ID列表（预留） */
@@ -202,6 +207,33 @@ export const permissionTableProps = buildProps({
    * @description 是否只读
    */
   readonly: Boolean,
+  /**
+   * @description 权限配置布局模式
+   */
+  layout: {
+    type: definePropType<'table' | 'split'>(String),
+    default: 'table',
+  },
+  /**
+   * @description 左右布局下左侧菜单树宽度
+   */
+  splitTreeWidth: {
+    type: definePropType<string | number>([String, Number]),
+    default: 220,
+  },
+  /**
+   * @description 左右布局下权限类型标题映射，key 对应 extraConfig.authorizationType；未配置的类型不会显示
+   */
+  permissionTypeLabels: {
+    type: definePropType<Partial<Record<number, string>>>(Object),
+    default: () => ({
+      1: '数据权限',
+      2: '按钮权限',
+      3: '导出权限',
+      4: '审核权限',
+      5: '字段权限',
+    }),
+  },
   /**
    * @description 表格列宽配置（从左到右：一级菜单、二级菜单、三级页面、权限）
    */

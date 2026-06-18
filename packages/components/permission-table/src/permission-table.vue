@@ -1,6 +1,31 @@
 <template>
   <div class="el-permission-table">
-    <table class="el-permission-table__table">
+    <permission-split-panel
+      v-if="layout === 'split'"
+      :data="props.data"
+      :cascade="cascade"
+      :show-inherit="showInherit"
+      :disabled="disabled"
+      :readonly="readonly"
+      :select-props="props.selectProps"
+      :split-tree-width="splitTreeWidth"
+      :permission-type-labels="permissionTypeLabels"
+      :default-expand-all="defaultExpandAll"
+      :get-role-inherit-state="getRoleInheritState"
+      :get-permission-granted-state="getPermissionGrantedState"
+      :get-constraint-value="getConstraintValue"
+      :handle-inherit-change="handleInheritChange"
+      :handle-granted-change="handleGrantedChange"
+      :handle-constraint-change="handleConstraintChange"
+    >
+      <template #inherit-granted-icon>
+        <slot name="inherit-granted-icon" />
+      </template>
+      <template #inherit-denied-icon>
+        <slot name="inherit-denied-icon" />
+      </template>
+    </permission-split-panel>
+    <table v-else class="el-permission-table__table">
       <colgroup>
         <col :style="{ width: normalizedColumnWidths[0] }" />
         <col :style="{ width: normalizedColumnWidths[1] }" />
@@ -219,7 +244,11 @@
 import { computed, ref, toRefs, watch } from 'vue'
 import { ElIcon } from '@element-plus/components/icon'
 import { ArrowRight } from '@element-plus/icons-vue'
-import { ConstraintConfig, PermissionCheckbox } from './components'
+import {
+  ConstraintConfig,
+  PermissionCheckbox,
+  PermissionSplitPanel,
+} from './components'
 import { useCascadeSelection } from './composables'
 import { InheritState, permissionTableProps } from './types'
 import { applyDefaultInheritState } from './utils'
@@ -277,7 +306,16 @@ interface ProcessedLevel1 {
 const props = defineProps(permissionTableProps)
 
 // 解构常用 props 供模板使用
-const { showInherit, disabled, readonly, columnWidths } = toRefs(props)
+const {
+  showInherit,
+  disabled,
+  readonly,
+  columnWidths,
+  layout,
+  splitTreeWidth,
+  permissionTypeLabels,
+  defaultExpandAll,
+} = toRefs(props)
 
 // 标准化列宽（支持数字和字符串）
 const normalizedColumnWidths = computed(() => {
@@ -423,7 +461,7 @@ const getNodeState = (id: string): NodeState => ({
 // 获取权限项的实际勾选状态（约束优先，但级联取消仍生效）
 const getPermissionGrantedState = (perm: PermissionDefinition): boolean => {
   // 如果存在约束条件
-  if (perm.constraintType !== 'none') {
+  if (perm.constraintType && perm.constraintType !== 'none') {
     // 首先检查是否有约束值
     const constraintValue = constraintStateMap.value[perm.id]
     const hasConstraintValue =
@@ -600,7 +638,7 @@ const getConstraintValue = (id: string): ConstraintConfigType | undefined => {
 const handleConstraintChange = (
   id: string,
   constraintType: ConstraintType,
-  value: string | number | (string | number)[] | undefined
+  value: ConstraintConfigType['enumValue'] | undefined
 ) => {
   // debugger
   constraintStateMap.value[id] = {
