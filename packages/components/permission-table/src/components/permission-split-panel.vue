@@ -112,9 +112,9 @@
                     </permission-checkbox>
                     <span>{{ getNodePath(page).join(' > ') }}</span>
                     <span class="el-permission-table__split-page-count">
-                      ({{ getNodeCount(page).checked }}/{{
+                      （{{ getNodeCount(page).checked }}/{{
                         getNodeCount(page).total
-                      }})
+                      }}）
                     </span>
                   </div>
                 </td>

@@ -274,7 +274,7 @@
 
   @include e(split-page-row) {
     td {
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-bottom: 1px solid getCssVar('border-color', 'lighter');
       background-color: #f5f7fa;
     }
@@ -294,7 +294,7 @@
 
   @include e(split-sub-header) {
     td {
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-right: 1px solid getCssVar('border-color', 'lighter');
       border-bottom: 1px solid getCssVar('border-color', 'lighter');
       background-color: #f5f7fa;
