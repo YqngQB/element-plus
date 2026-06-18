@@ -29,6 +29,8 @@ catalog:
   # vitest: ^2.0.5
 
 dedupePeers: true
+confirmModulesPurge: false
+minimumReleaseAge: 0
 
 overrides:
   jwa: ^1.4.2 # 20697
